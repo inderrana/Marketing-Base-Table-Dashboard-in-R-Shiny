@@ -5,8 +5,18 @@ summary(UserDailyAggregation)
 #write.csv(UserDailyAggregation,'UserDailyAggregation.csv')
 
 UserDailyAggregation$Date <- as.Date(UserDailyAggregation$Date,format = '%Y%m%d')
+Demographics$FirstPay <- as.Date(Demographics$FirstPay, format = '%Y%m%d')
 
-UserDailyAggregation_2 <- UserDailyAggregation %>%
+Demographics_paydate <- Demographics %>%
+  select(UserID,FirstPay)
+
+UserDailyAggregation_2 <- left_join(UserDailyAggregation,Demographics_paydate,by = 'UserID')
+
+UserDailyAggregation_2 <- UserDailyAggregation_2 %>%
+                            filter(Date >= FirstPay)
+                                
+
+UserDailyAggregation_3 <- UserDailyAggregation_2 %>%
                               group_by(UserID) %>%
                                   summarise(total_stakes = sum(Stakes), 
                                             total_bets = sum(Bets),
@@ -22,10 +32,12 @@ UserDailyAggregation_2 <- UserDailyAggregation %>%
                                             min_winning = min(Winnings)) 
 
 
-UserDailyAggregation_2$count <- UserDailyAggregation %>% count(UserID)
+UserDailyAggregation_3$count <- UserDailyAggregation_2 %>% count(UserID)
 
 
-UserDailyAggregation_3 <- UserDailyAggregation %>% 
+UserDailyAggregation_4 <- UserDailyAggregation_2 %>% 
                               group_by(UserID,ProductID) %>%
                                   slice(1)
+
+
                                   
