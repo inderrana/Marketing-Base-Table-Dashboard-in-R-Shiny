@@ -2,7 +2,10 @@ setwd('C:/Users/njohn/OneDrive - IESEG/Semester 1/Business Reporting Tool_Open S
 
 if (!require("dplyr")) install.packages("dplyr")
 if (!require("formattable")) install.packages("formattable")
+if (!require("ggplot2")) install.packages("ggplot2")
+
 options(scipen = 20)
+
 load('DataGroupAssignment.Rdata')
 summary(UserDailyAggregation)
 #write.csv(UserDailyAggregation,'UserDailyAggregation.csv')
@@ -46,10 +49,9 @@ UserDailyAggregation_recency <- UserDailyAggregation_2 %>%
                                 summarise(recency = as.numeric(recency_Date - max(Date)),
                                           frequency = n())
 #calculate monetary value check
-UserDailyAggregation_value <- PokerChipConversions %>%
+UserDailyAggregation_value <- UserDailyAggregation_2 %>%
                                   group_by(UserID) %>%
-                                    filter(TransType == 124)  %>%
-                                      summarise(monetary_value = sum(TransAmount)) 
+                                      summarise(monetary_value = sum(Winnings)) 
 
 #Merge the tables to get recency,frequency and lifetime value
 UserDailyAggregation_rfm <- left_join(UserDailyAggregation_recency,UserDailyAggregation_value,by='UserID')
@@ -66,3 +68,5 @@ UserDailyAggregation_rfm$rfm_score <- normalize(UserDailyAggregation_rfm$rfm_sco
 
 
 UserDailyAggregation_3 <- left_join(UserDailyAggregation_3,UserDailyAggregation_rfm,by='UserID')
+
+
