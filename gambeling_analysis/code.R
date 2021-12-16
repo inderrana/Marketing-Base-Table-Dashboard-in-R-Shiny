@@ -1,0 +1,422 @@
+# Load packages
+if(!require("shiny")) install.packages("shiny"); library("shiny")
+if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
+if(!require("ggplot2")) install.packages("ggplot2"); library("ggplot2")
+if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
+if(!require("haven")) install.packages("haven"); library("haven")
+if(!require("tidyr")) install.packages("tidyr"); library("tidyr")
+if(!require("stringr")) install.packages("stringr"); library("stringr")
+if(!require("maps")) install.packages("maps"); library("maps")
+if(!require("data.table")) install.packages("data.table"); library("data.table")
+if(!require("shinydashboard")) install.packages("shinydashboard"); library("shinydashboard")
+if(!require("rsconnect")) install.packages("rsconnect"); library("rsconnect")
+if(!require("DT")) install.packages("DT"); library("DT")
+if (!require("rfm")) install.packages("rfm"); library("DT")
+if (!require("Hmisc")) install.packages('Hmisc'); library("Hmisc")
+if (!require("lubridate")) install.packages("lubridate"); library("lubridate")
+if (!require("formattable")) install.packages("formattable"); library("formattable")
+if (!require("plotly")) install.packages("plotly"); library("plotly")
+if (!require("readxl")) install.packages("readxl"); library("readxl");
+if (!require("tidyverse")) install.packages("tidyverse"); library("tidyverse");
+if (!require("grid")) install.packages("grid"); library("grid");
+if (!require("rworldmap")) install.packages("rworldmap"); library("rworldmap");
+
+options(scipen = 20)
+
+getwd()
+
+setwd("/Users/inder/Dropbox/My Mac (Inders-MacBook-Pro.local)/Documents/GitHub/marketing_datamart/gambeling_analysis")
+getwd()
+
+data = load('DataGroupAssignment.Rdata')
+
+data
+
+#check tibble feature types
+str(Demographics)
+
+#convert registration date to date time 
+Demographics$RegDate <- as.Date(Demographics$RegDate)
+
+str(Demographics$RegDate)
+
+#convert first pay, first act, first sports book play, first casino play,
+# first games play, and  first poker play dates to datetime.
+Demographics$FirstPay <- as.Date(Demographics$FirstPay, "%Y%m%d")
+
+Demographics$FirstAct <- as.Date(Demographics$FirstAct, "%Y%m%d")
+Demographics$FirstSp <- as.Date(Demographics$FirstSp, "%Y%m%d")
+Demographics$FirstCa <- as.Date(Demographics$FirstCa, "%Y%m%d")
+Demographics$FirstGa <- as.Date(Demographics$FirstGa, "%Y%m%d")
+Demographics$FirstPo <- as.Date(Demographics$FirstPo, "%Y%m%d")
+
+str(Demographics)
+
+#create a cutoff date object
+october <- as.Date("20051002","%Y%m%d")
+
+#calculate LOR (Length of Relation) based on time since 
+#last transaction date in the dataset and the registration date of the 
+#gambler
+Demographics$LOR <- october - Demographics$RegDate
+
+#calculate play to act interval (PTAI)
+#based on time from FirstPay (first betting deposit date)
+#and first active date
+Demographics$PTAI <- Demographics$FirstAct - Demographics$FirstPay
+
+#calculate registeration to first pay interval (RTFP)
+#based on time from gambler registration date to first bet deposit
+Demographics$RTFP <- Demographics$FirstPay - Demographics$RegDate
+
+#calculate dummy variable for each first play category (sports book, casino play,
+#first games play, first poker play) which indicates whether the indiviual
+#has ever partook in these play categories
+Demographics$SpPlayed <- ifelse(is.na(Demographics$FirstSp),1,0)
+Demographics$CaPlayed <- ifelse(is.na(Demographics$FirstCa),1,0)
+Demographics$GaPlayed <- ifelse(is.na(Demographics$FirstGa),1,0)
+Demographics$PoPlayed <- ifelse(is.na(Demographics$FirstPo),1,0)
+
+sapply(Demographics,function(x) sum(is.na(x)))
+
+table(Demographics$Gender)
+
+Demographics$Gender <- ifelse(is.na(Demographics$Gender),1, Demographics$Gender)
+
+sum(is.na(Demographics$Gender))
+
+head(Demographics)
+
+
+UserDailyAggregation$Date <- as.Date(UserDailyAggregation$Date,"%Y%m%d")
+
+sum(is.na(UserDailyAggregation))
+
+head(UserDailyAggregation)
+
+
+#Filter out transactions before first paydate
+Demographics_paydate <- Demographics %>%
+  select(UserID,FirstPay)
+
+uda_filtered <- left_join(UserDailyAggregation,Demographics_paydate,by = 'UserID')
+
+uda_filtered <- uda_filtered %>%
+  filter(Date >= FirstPay) %>%
+  select(-FirstPay)
+
+
+UserDailyAggregation_1 <- uda_filtered %>% 
+  group_by(UserID) %>% 
+  summarise(first_txn_dt=min(Date),
+            last_txn_dt=max(Date), 
+            txn_cnt=n(), 
+            total_stakes=round(sum(Stakes)), 
+            total_wins=round(sum(Winnings)), 
+            total_bets=round(sum(Bets)), 
+            avg_stakes=round(mean(Stakes)), 
+            avg_wins=round(mean(Winnings)), 
+            avg_bets=round(mean(Bets)))
+
+head(UserDailyAggregation_1)
+
+p_id <- unique(UserDailyAggregation[c("ProductID")])
+p_id[order(p_id$ProductID),]
+
+# Making a new dataframe with number of transactions per UserID in the given period
+UserDailyAggregation_2 <- uda_filtered %>% 
+  group_by(UserID) %>% 
+  summarise(procuct_1_cnt=length(ProductID[ProductID == 1]),
+            product_2_cnt=length(ProductID[ProductID == 2]),
+            product_4_cnt=length(ProductID[ProductID == 4]),
+            product_5_cnt=length(ProductID[ProductID == 5]),
+            product_6_cnt=length(ProductID[ProductID == 6]),
+            product_7_cnt=length(ProductID[ProductID == 7]),
+            product_8_cnt=length(ProductID[ProductID == 8])
+  )
+
+head(UserDailyAggregation_2)
+
+sapply(UserDailyAggregation_1,function(x) sum(is.na(x)))
+
+head(UserDailyAggregation)
+
+uda_cleaned <- merge(x = UserDailyAggregation_1, y = UserDailyAggregation_2, by = "UserID", all.x = TRUE)
+
+head(uda_cleaned)
+
+names(uda_cleaned)
+
+
+#########
+#Calculate Recency, Frequency and Monetary Value
+#Get max date
+
+#calculate recency and frequency
+UserDailyAggregation_rfm <- uda_filtered %>% 
+  group_by(UserID) %>% 
+  summarise(recency = as.numeric(october - max(Date)),
+            frequency = n(),
+            monetary_value = sum(Winnings))
+
+#Fill na with 0s
+UserDailyAggregation_rfm[is.na(UserDailyAggregation_rfm)] = 0
+
+#calculate RFM Score
+UserDailyAggregation_rfm <- UserDailyAggregation_rfm %>%
+  mutate(rfm_value = recency + frequency + monetary_value)
+
+
+uda_cleaned <- left_join(uda_cleaned,UserDailyAggregation_rfm,by='UserID')
+
+UserDailyAggregation_rfm <- UserDailyAggregation_rfm %>%
+  mutate(recency_score = as.numeric(cut2(-recency, g=4)),
+         frequency_score = as.numeric(cut2(frequency, g=4)),
+         value_score = as.numeric(cut2(monetary_value, g=4)))
+UserDailyAggregation_rfm <- UserDailyAggregation_rfm %>%
+  mutate(recency_score = recency_score *0.2,
+         frequency_score = frequency_score *0.2,
+         value_score = value_score *0.6)
+
+UserDailyAggregation_rfm$weighted_score <- rowMeans(UserDailyAggregation_rfm[,c("recency_score","frequency_score","value_score")])
+
+########
+
+
+uda_cleaned$profit <- uda_cleaned$total_stakes - uda_cleaned$total_wins
+
+
+###########################
+
+PokerChipConversions_buy <- PokerChipConversions %>% 
+  group_by(UserID) %>% 
+  filter(TransType == 124) %>% 
+  summarise(total_buy = sum(TransAmount),
+            avg_buy = mean(TransAmount),
+            min_buy = min(TransAmount),
+            max_buy = max(TransAmount))
+
+PokerChipConversions_sell <- PokerChipConversions %>% 
+  group_by(UserID) %>% 
+  filter(TransType == 24) %>% 
+  summarise(total_sell = sum(TransAmount),
+            avg_sell = mean(TransAmount),
+            min_sell = min(TransAmount),
+            max_sell = max(TransAmount))
+
+PokerChipConversions_2 <- full_join(x=PokerChipConversions_buy,y=PokerChipConversions_sell, by='UserID')
+
+###########################
+
+PokerChipConversions$Date <- as.POSIXlt(strptime(PokerChipConversions$TransDateTime, format = "%Y-%m-%d %H:%M:%S",tz="UTC"))
+PokerChipConversions$Date <- as.Date(PokerChipConversions$Date)
+PokerChipConversions_3 <- PokerChipConversions %>%
+  group_by(UserID,Date) %>%
+  filter(TransType == 24) %>%
+  dplyr::summarise(total_sell = sum(TransAmount))
+uda_poker_table <- full_join(PokerChipConversions_3,uda_filtered,by=c('UserID','Date'),all.y=TRUE)
+uda_poker_table[is.na(uda_poker_table)] = 0
+uda_poker_table$total_amount = uda_poker_table$Winnings + uda_poker_table$total_sell
+UserDailyAggregation_rfm_c <- rfm_table_order(data = uda_poker_table,customer_id = UserID,order_date = Date,revenue = total_amount,analysis_date = october )
+UserDailyAggregation_rfm_2 <- UserDailyAggregation_rfm_c$rfm
+names(UserDailyAggregation_rfm_2)[1] <- 'UserID'
+
+###########################
+
+###########################
+
+base_table <- merge(x= Demographics,y=uda_cleaned,by='UserID',all.x=TRUE)
+base_table <- left_join(base_table,PokerChipConversions_2,by='UserID')
+base_table <- left_join(base_table,UserDailyAggregation_rfm_2,by='UserID')
+
+base_table <- base_table %>%
+  mutate(w_recency_score = recency_score *0.2,
+         w_frequency_score = frequency_score *0.2,
+         w_monetary_score = monetary_score *0.6)
+base_table$weighted_rfm <- rowMeans(base_table[,c("w_recency_score","w_frequency_score","w_monetary_score")])
+base_table$Loyality <- ifelse(base_table$weighted_rfm > 1.6, 'Loyalists',
+                              ifelse((base_table$weighted_rfm <= 1.6) & (base_table$weighted_rfm > 1.3),'Potential Loyalists',
+                                     ifelse((base_table$weighted_rfm <= 1.3) & (base_table$weighted_rfm > 0.7),'Regular Customers',
+                                            ifelse((base_table$weighted_rfm <= 0.7) & (base_table$weighted_rfm > 0.4),'Hesitant Customers','Needs Attention'
+                                            ))))
+
+###########################
+
+head(base_table)
+colnames(base_table)
+
+sapply(base_table,function(x) sum(is.na(x)))
+
+# creat function impute NA values with 0 in columns which are numeric
+numeric_col_na_to_0 <- function(x) { replace(x, is.na(x), 0) }
+
+base_table$txn_cnt <- numeric_col_na_to_0(base_table$txn_cnt)
+base_table$total_stakes <- numeric_col_na_to_0(base_table$total_stakes)
+base_table$total_wins <- numeric_col_na_to_0(base_table$total_wins)
+base_table$total_bets <- numeric_col_na_to_0(base_table$total_bets)
+base_table$avg_stakes <- numeric_col_na_to_0(base_table$avg_stakes)
+base_table$avg_wins <- numeric_col_na_to_0(base_table$avg_wins)
+base_table$avg_bets <- numeric_col_na_to_0(base_table$avg_bets)
+base_table$procuct_1_cnt <- numeric_col_na_to_0(base_table$procuct_1_cnt)
+base_table$product_2_cnt <- numeric_col_na_to_0(base_table$product_2_cnt)
+base_table$product_4_cnt <- numeric_col_na_to_0(base_table$product_4_cnt)
+base_table$product_5_cnt <- numeric_col_na_to_0(base_table$product_5_cnt)
+base_table$product_6_cnt <- numeric_col_na_to_0(base_table$product_6_cnt)
+base_table$product_7_cnt <- numeric_col_na_to_0(base_table$product_7_cnt)
+base_table$product_8_cnt <- numeric_col_na_to_0(base_table$product_8_cnt)
+base_table$recency <- numeric_col_na_to_0(base_table$recency)
+base_table$frequency <- numeric_col_na_to_0(base_table$frequency)
+base_table$monetary_value <- numeric_col_na_to_0(base_table$monetary_value)
+base_table$rfm_value <- numeric_col_na_to_0(base_table$rfm_value)
+base_table$recency_score <- numeric_col_na_to_0(base_table$recency_score)
+base_table$frequency_score <- numeric_col_na_to_0(base_table$frequency_score)
+base_table$monetary_score <- numeric_col_na_to_0(base_table$monetary_score)
+base_table$rfm_score <- numeric_col_na_to_0(base_table$rfm_score)
+base_table$profit <- numeric_col_na_to_0(base_table$profit)
+base_table$total_buy <- numeric_col_na_to_0(base_table$total_buy)
+base_table$avg_buy <- numeric_col_na_to_0(base_table$avg_buy)
+base_table$min_buy <- numeric_col_na_to_0(base_table$min_buy)
+base_table$max_buy <- numeric_col_na_to_0(base_table$max_buy)
+base_table$total_sell <- numeric_col_na_to_0(base_table$total_sell)
+base_table$avg_sell <- numeric_col_na_to_0(base_table$avg_sell)
+base_table$min_sell <- numeric_col_na_to_0(base_table$min_sell)
+base_table$max_sell <- numeric_col_na_to_0(base_table$max_sell)
+base_table$recency_days <- numeric_col_na_to_0(base_table$recency_days)
+base_table$transaction_count <- numeric_col_na_to_0(base_table$transaction_count)
+base_table$amount <- numeric_col_na_to_0(base_table$amount)
+base_table$w_recency_score <- numeric_col_na_to_0(base_table$w_recency_score)
+base_table$w_frequency_score <- numeric_col_na_to_0(base_table$w_frequency_score)
+base_table$w_monetary_score <- numeric_col_na_to_0(base_table$w_monetary_score)
+base_table$weighted_rfm <- numeric_col_na_to_0(base_table$weighted_rfm)
+
+sapply(base_table,function(x) sum(is.na(x)))
+
+###########################
+
+
+###########################
+#create plot that visualizes monetary value (gambler' winnings), frequency, and recency
+scatter_plot_monetary_value <- ggplot(base_table, aes(x=frequency,y=monetary_value,color=recency)) + 
+  ggtitle('Gambler total winnings against frequency') + 
+  xlab('Frequency (days)') + 
+  ylab('Total winnings (Euros)') + 
+  #create annotation for most extreme outlier, displaying their ID
+  annotate(geom='text',x = 175, y= 1070000, label='Gambler ID with highest winnings',color='blue')
+
+#code adapted and inspired from this forum thread: https://stackoverflow.com/questions/1923273/counting-the-number-of-elements-with-the-values-of-x-in-a-vector
+scatter_plot_monetary_value_1 <- lapply(base_table[1], function(data) scatter_plot_monetary_value +
+                                          geom_jitter(alpha=0.5) + 
+                                          theme_light(base_size=11) + 
+                                          theme(plot.title = element_text(hjust = 0.5)) + 
+                                          geom_text(aes(label= ifelse(base_table$monetary_value > quantile(base_table$monetary_value, 0.9999999),as.character(base_table$UserID),'')),hjust=0,vjust=0))
+
+scatter_plot_monetary_value_1
+###########################
+
+###########################
+prod_counts = c(sum(base_table$procuct_1_cnt),sum(base_table$product_2_cnt),sum(base_table$product_4_cnt),sum(base_table$product_5_cnt),sum(base_table$product_6_cnt),sum(base_table$product_7_cnt),sum(base_table$product_8_cnt))
+
+df_product_counts <- data.frame(
+  products = as.factor(c('Prod_1','Prod_2','Prod_4','Prod_5','Prod_6','Prod_7','Prod_8')),
+  counts = prod_counts
+)
+
+###########################
+
+#create a barchart displaying most popular products excluding poker 
+bar_plots_products <- ggplot(df_product_counts,aes(x=products,y=counts, fill=products)) +
+  geom_col(position='dodge') +
+  ggtitle('Product count (usage) against product type') + 
+  theme_light(base_size=11) +
+  theme(plot.title = element_text(hjust = 0.5)) +
+  ylab('Count (times played)') + 
+  scale_x_discrete('Product type',labels=c('Sports book fixed-odd','Sports book live-action','Casino BossMedia','Supertoto','Games VS','Games bwin','Casino Chartwell')) +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_fill_discrete(labels=c('Sports book fixed-odd','Sports book live-action','Casino BossMedia','Supertoto','Games VS','Games bwin','Casino Chartwell'))
+
+bar_plots_products
+###########################
+head(base_table)
+###########################
+
+df_country <- base_table %>% 
+  group_by(Country, Gender) %>% 
+  summarise(usr_cnt=length(UserID)
+  )
+
+ctry_map_df <- read_excel("appendice.xlsx", sheet = "country_nm")
+df_country <- inner_join(df_country, ctry_map_df, by  = "Country")
+df_country <- df_country[order(df_country$usr_cnt, decreasing = TRUE),]
+df_country <- head(df_country, 10)
+
+country_nm <- df_country$`Country Name`
+Count <- df_country$usr_cnt
+
+df_country
+
+fig_cntry <- plot_ly(
+  df_country,
+  x = ~reorder(country_nm,Count),
+  y = ~Count,
+  type = "bar",
+  text = paste0(as.character(round(Count/1000)),"K"), textposition = 'auto'
+  
+)
+fig_cntry
+###########################
+
+rgn_plt <- base_table %>% 
+                      count(Country) %>% 
+                      rename(region = Country)
+rgn_plt$Category <- ifelse(rgn_plt$n <= 100, 1, ifelse(rgn_plt$n > 1000 & rgn_plt$n<20000, 2, ifelse(rgn_plt$n > 20000, 4, 3)))
+
+rgn_plt <- rename(rgn_plt, Country = region)
+
+ctry_map_df <- read_excel("appendice.xlsx", sheet = "country_nm")
+
+# Get the world map
+worldMap <- getMap()
+
+# Member States of the European Union
+europeanUnion <- c("Austria","Belgium","Bulgaria","Croatia","Cyprus",
+                   "Czech Rep.","Denmark","Estonia","Finland","France",
+                   "Germany","Greece","Hungary","Ireland","Italy","Latvia",
+                   "Lithuania","Luxembourg","Malta","Netherlands","Poland",
+                   "Portugal","Romania","Slovakia","Slovenia","Spain",
+                   "Sweden","United Kingdom")
+# Select only the index of states member of the E.U.
+indEU <- which(worldMap$NAME%in%europeanUnion)
+
+# Extract longitude and latitude border's coordinates of members states of E.U. 
+europeCoords <- lapply(indEU, function(i){
+  df <- data.frame(worldMap@polygons[[i]]@Polygons[[1]]@coords)
+  df$region =as.character(worldMap$NAME[i])
+  colnames(df) <- list("long", "lat", "region")
+  return(df)
+})
+
+europeCoords <- do.call("rbind", europeCoords)
+
+world_map <- map_data("world")
+
+rgn_plt_nm <- left_join(rgn_plt, ctry_map_df, by  = "Country")
+
+rgn_plt_2 <- inner_join(rgn_plt_nm, europeCoords, by = c("Country Name"="region"))
+
+# Plot map
+map_plot <- ggplot() + geom_polygon(data = rgn_plt_2, aes(x = long, y = lat, group = Country, fill = Category),
+                             colour = "black", size = 0.1) +
+  coord_map(xlim = c(-13, 35),  ylim = c(32, 71))
+
+map_plot <- map_plot + scale_fill_gradient(name = "Users Distribution", low = "#FF0000FF", high = "#FFFF00FF", na.value = "grey50")
+
+map_plot <- map_plot + theme(
+  axis.text.x = element_blank(),
+  axis.text.y = element_blank(), axis.ticks.x = element_blank(),
+  axis.ticks.y = element_blank(), axis.title = element_blank(),
+  #rect = element_blank(),
+  plot.margin = unit(0 * c(-1.5, -1.5, -1.5, -1.5), "lines"))
+
+map_plot
+###########################
+

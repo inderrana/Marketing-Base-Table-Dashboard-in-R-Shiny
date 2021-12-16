@@ -8,9 +8,9 @@
 #
 
 library(shiny)
-
-
-
+shinyApp(
+  ui = fluidPage(theme = shinytheme("united")
+                 ))
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 

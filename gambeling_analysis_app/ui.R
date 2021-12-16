@@ -21,6 +21,8 @@ if(!require("maps")) install.packages("maps"); library("maps")
 if(!require("data.table")) install.packages("data.table"); library("data.table")
 if(!require("shinydashboard")) install.packages("shinydashboard"); library("shinydashboard")
 if(!require("rsconnect")) install.packages("rsconnect"); library("rsconnect")
+if(!require("shinythemes")) install.packages("shinythemes"); library("shinythemes")
+if(!require("dashboardthemes")) install.packages("dashboardthemes"); library("dashboardthemes")
 
 
 #Load our Datamart:
@@ -47,6 +49,10 @@ sidebar <- dashboardSidebar(
 )
 
 body <- dashboardBody(
+  ### changing theme
+  shinyDashboardThemes(
+    theme = "purple_gradient"
+  ),
   
   ############ Page 1: Overview #################
   tabItems( 
@@ -93,9 +99,11 @@ body <- dashboardBody(
 
 
       
-      
+shinyUI(fluidPage(
+                  dashboardPage(header, sidebar, body)
+))      
   
   
-  shinyUI(dashboardPage(
-    header, sidebar, body ,skin ="green")
-  )
+ # shinyUI(dashboardPage(
+  #  header, sidebar, body ,skin ="green")
+  #)
