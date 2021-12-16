@@ -352,7 +352,7 @@ df_country <- head(df_country, 10)
 country_nm <- df_country$`Country Name`
 Count <- df_country$usr_cnt
 
-df_country
+#df_country
 
 fig_cntry <- plot_ly(
   df_country,
@@ -419,4 +419,5 @@ map_plot <- map_plot + theme(
 
 map_plot
 ###########################
+
 
