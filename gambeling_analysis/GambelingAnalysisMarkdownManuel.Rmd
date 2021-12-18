@@ -50,6 +50,24 @@ histogram_LOR <- ggplot(base_table, aes(x=LOR)) +
 histogram_LOR
 ```
 
+PTAI (Pay to Active Interval):
 
+This time interval is found by subtracting the time from the first deposit of funds for betting to the date where the gambler is first actively participating in play. The unit of this measure is days. 
 
+```{r}
+## Total bets summary sa
+histogram_PTAI <- ggplot(base_table, aes(x=PTAI)) +
+  geom_histogram(bins=4) 
+histogram_PTAI
+```
 
+RTFP (Registration to First Payment)
+
+This metric is a time interval from a gambler registration date to the first deposit of funds for betting. It is calculated by subtracting the registration date from the first pay date. It's unit of measure is days. 
+
+```{r}
+## Total bets summary sa
+histogram_RTFP <- ggplot(base_table, aes(x=RTFP)) +
+  geom_histogram() 
+histogram_RTFP
+```
