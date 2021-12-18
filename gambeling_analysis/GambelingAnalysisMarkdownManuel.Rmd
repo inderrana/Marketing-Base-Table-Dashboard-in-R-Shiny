@@ -6,6 +6,7 @@ output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
+library('ggplot2')
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
@@ -15,25 +16,40 @@ The purpose of this manual is to provide our marketing analysis team with a high
 
 # Basetable Variable Summary Statistics: 
 # Total Bets Stats:
-```{r cars}
-load('base_table.Rdata')
+```{r}
 ## Total bets summary sa
+load("~/Desktop/marketing_datamart/gambeling_analysis/base_table.Rdata")
 summary(base_table$total_bets)
 ```
 #Total Stakes Stats:
 
-```{r cars}
+```{r}
 ## Total bets summary sa
 summary(base_table$total_stakes)
 ```
 #Total Wins Stats:
-```{r cars}
+```{r}
 ## Total bets summary sa
 summary(base_table$total_wins)
 ```
 #Total Profit Stats: 
-```{r cars}
+```{r}
 ## Total bets summary sa
 summary(base_table$profit)
 ```
-## Created Metrics 
+## Created Metrics:
+
+LOR (Length of Relationship):
+
+Calculated by subtracting registration date (RegDate) from the latest date in the dataset October, 2nd 2005. The unit of this measure is days since registration date. As the histogram below displays, the highest count of in the distribution is found in the interval from 220 days to 225 days. 
+
+```{r}
+## Total bets summary sa
+histogram_LOR <- ggplot(base_table, aes(x=LOR)) +
+  geom_histogram() 
+histogram_LOR
+```
+
+
+
+
