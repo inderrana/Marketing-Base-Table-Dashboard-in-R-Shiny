@@ -11,19 +11,29 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Analysis Overview
 
-The purpose of this manual is to provide our marketing analysis team with a high-level overview of the relevant statistical summaries made throughout this descriptive analysis project. Provided additionally, are explanations for the different features or variables which we engineered as a team in order to extract additional insight from the dataset, which can be used in future analysis such as segmentation or predictive analytics. 
+The purpose of this manual is to provide our marketing analysis team with a high-level overview of the relevant statistical summaries of this descriptive analysis project. Provided additionally, are explanations for the different features or variables which we engineered as a team in order to extract additional insight from the dataset, which can be used in future analysis such as segmentation or predictive analytics. 
 
+# Basetable Variable Summary Statistics: 
+# Total Bets Stats:
+```{r cars}
+load('base_table.Rdata')
+## Total bets summary sa
+summary(base_table$total_bets)
+```
+#Total Stakes Stats:
 
 ```{r cars}
-summary(cars)
+## Total bets summary sa
+summary(base_table$total_stakes)
 ```
-
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+#Total Wins Stats:
+```{r cars}
+## Total bets summary sa
+summary(base_table$total_wins)
 ```
-
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+#Total Profit Stats: 
+```{r cars}
+## Total bets summary sa
+summary(base_table$profit)
+```
+## Created Metrics 
