@@ -52,7 +52,7 @@ histogram_LOR
 
 PTAI (Pay to Active Interval):
 
-This time interval is found by subtracting the time from the first deposit of funds for betting to the date where the gambler is first actively participating in play. The unit of this measure is days. 
+This time interval is found by subtracting the time from the first deposit of funds for betting to the date where the gambler is first actively participating in play. The unit of this measure is days. The histogram below shows that the dataset's PTAI is uniformly distributed with very little variance. However, there are a few outliers in both the positive and negative directions. This means in a few cases gamblers were actively playing prior to their first date due to promotional campaigns.
 
 ```{r}
 ## Total bets summary sa
@@ -70,4 +70,10 @@ This metric is a time interval from a gambler registration date to the first dep
 histogram_RTFP <- ggplot(base_table, aes(x=RTFP)) +
   geom_histogram() 
 histogram_RTFP
+```
+The distribution of RTFP above demonstrates that the vast majority of gamblers made their first deposit of gambling funds the same day they were registered. However, some outliers on the far right of the horizontal axis indicate anomalous behavior paying as much as 242 days after registering. There are no gamblers with a negative RTFP, as all gamblers with a first pay date before registration were filtered from the dataset. 
+
+```{r}
+max(base_table$RTFP)
+min(base_table$RTFP)
 ```
