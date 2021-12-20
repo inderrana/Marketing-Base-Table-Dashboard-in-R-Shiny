@@ -18,15 +18,22 @@ if (!require("formattable")) install.packages("formattable"); library("formattab
 if (!require("plotly")) install.packages("plotly"); library("plotly")
 if (!require("readxl")) install.packages("readxl"); library("readxl");
 if (!require("tidyverse")) install.packages("tidyverse"); library("tidyverse");
-if (!require("grid")) install.packages("grid"); library("grid");
+if (!require("mapproj")) install.packages("mapproj"); library("mapproj");
 if (!require("rworldmap")) install.packages("rworldmap"); library("rworldmap");
+if(!require("maptools")) install.packages("maptools"); library("maptools")
+if(!require("sqldf")) install.packages("sqldf"); library("sqldf")
 
 options(scipen = 20)
 
 getwd()
 
-setwd("/Users/inder/Dropbox/My Mac (Inders-MacBook-Pro.local)/Documents/GitHub/marketing_datamart/gambeling_analysis")
-getwd()
+#setwd("/Users/inder/Dropbox/My Mac (Inders-MacBook-Pro.local)/Documents/GitHub/marketing_datamart/gambeling_analysis")
+
+
+countries_apx <- read_excel("data//appendice.xlsx", sheet = "country_nm")
+product_apx <- read_excel("data//appendice.xlsx", sheet = "prod")
+language_apx <- read_excel("data//appendice.xlsx", sheet = "lang")
+app_nm_apx <- read_excel("data//appendice.xlsx", sheet = "app_nm")
 
 data = load('DataGroupAssignment.Rdata')
 
@@ -95,14 +102,17 @@ sum(is.na(UserDailyAggregation))
 head(UserDailyAggregation)
 
 
+
 #Filter out transactions before first paydate
 Demographics_paydate <- Demographics %>%
   select(UserID,FirstPay)
 
 uda_filtered <- left_join(UserDailyAggregation,Demographics_paydate,by = 'UserID')
+uda_filtered <- left_join(uda_filtered, product_apx, by="ProductID")
+
 
 uda_filtered <- uda_filtered %>%
-  filter(Date >= FirstPay) %>%
+  dplyr::filter(Date >= FirstPay) %>%
   select(-FirstPay)
 
 
@@ -190,15 +200,16 @@ uda_cleaned$profit <- uda_cleaned$total_stakes - uda_cleaned$total_wins
 
 PokerChipConversions_buy <- PokerChipConversions %>% 
   group_by(UserID) %>% 
-  filter(TransType == 124) %>% 
+  dplyr::filter(TransType == 124) %>% 
   summarise(total_buy = sum(TransAmount),
             avg_buy = mean(TransAmount),
             min_buy = min(TransAmount),
             max_buy = max(TransAmount))
 
+
 PokerChipConversions_sell <- PokerChipConversions %>% 
   group_by(UserID) %>% 
-  filter(TransType == 24) %>% 
+  dplyr::filter(TransType == 24) %>% 
   summarise(total_sell = sum(TransAmount),
             avg_sell = mean(TransAmount),
             min_sell = min(TransAmount),
@@ -212,10 +223,17 @@ PokerChipConversions$Date <- as.POSIXlt(strptime(PokerChipConversions$TransDateT
 PokerChipConversions$Date <- as.Date(PokerChipConversions$Date)
 PokerChipConversions_3 <- PokerChipConversions %>%
   group_by(UserID,Date) %>%
-  filter(TransType == 24) %>%
+  dplyr::filter(TransType == 24) %>%
   dplyr::summarise(total_sell = sum(TransAmount))
+
 uda_poker_table <- full_join(PokerChipConversions_3,uda_filtered,by=c('UserID','Date'),all.y=TRUE)
+
+uda_poker_table <- uda_poker_table[ , -which(names(uda_poker_table) %in% c("Product Description"))]
+
+head(uda_poker_table)
+
 uda_poker_table[is.na(uda_poker_table)] = 0
+
 uda_poker_table$total_amount = uda_poker_table$Winnings + uda_poker_table$total_sell
 UserDailyAggregation_rfm_c <- rfm_table_order(data = uda_poker_table,customer_id = UserID,order_date = Date,revenue = total_amount,analysis_date = october )
 UserDailyAggregation_rfm_2 <- UserDailyAggregation_rfm_c$rfm
@@ -291,6 +309,17 @@ base_table$weighted_rfm <- numeric_col_na_to_0(base_table$weighted_rfm)
 
 sapply(base_table,function(x) sum(is.na(x)))
 
+final_base_table <- left_join(base_table, countries_apx, by="Country")
+final_base_table <- left_join(final_base_table, language_apx, by="Language")
+final_base_table <- left_join(final_base_table, app_nm_apx, by="ApplicationID")
+
+names(final_base_table)[names(final_base_table) == 'Country Name'] <- 'Country_Name'
+
+glimpse(final_base_table)
+
+save(final_base_table, file = "base_table.RData")
+
+
 ###########################
 
 
@@ -314,6 +343,9 @@ scatter_plot_monetary_value_1
 ###########################
 
 ###########################
+
+#base_table_p <- subset(base_table, Country %in% input$Country)
+
 prod_counts = c(sum(base_table$procuct_1_cnt),sum(base_table$product_2_cnt),sum(base_table$product_4_cnt),sum(base_table$product_5_cnt),sum(base_table$product_6_cnt),sum(base_table$product_7_cnt),sum(base_table$product_8_cnt))
 
 df_product_counts <- data.frame(
@@ -337,32 +369,56 @@ bar_plots_products <- ggplot(df_product_counts,aes(x=products,y=counts, fill=pro
 bar_plots_products
 ###########################
 head(base_table)
-###########################
 
-df_country <- base_table %>% 
-  group_by(Country, Gender) %>% 
-  summarise(usr_cnt=length(UserID)
+###########################
+df_donut <- sqldf("select [Country_Name] as country, count(UserID) as count from final_base_table group by 1 order by 2 desc limit 11")
+write.csv(df_donut,"df_donut.csv", row.names = FALSE)
+df_donut
+df_donut <- read.csv("df_donut.csv")
+
+plot_ly(labels = df_donut$country, values = df_donut$count)  %>% 
+  plotly::add_pie(hole = 0.5) %>% 
+  layout(title = "Top User Distribution by Country",  showlegend = T,
+                    xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                    yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+##ggplot
+ggplot(df_donut, aes(x="", y=count, fill=country)) +
+  geom_bar(stat="identity", width=1, color="white") +
+  coord_polar("y", start=0)  +
+  theme_void() +
+  geom_text(aes(label = count), position = position_stack(vjust = 0.5),  color = "white") 
+  
+#names(final_base_table)
+###########################
+df_country <- final_base_table %>% 
+  group_by(Country_Name, Gender) %>% 
+  summarise(usr_cnt=length(Gender)
   )
 
-ctry_map_df <- read_excel("appendice.xlsx", sheet = "country_nm")
-df_country <- inner_join(df_country, ctry_map_df, by  = "Country")
-df_country <- df_country[order(df_country$usr_cnt, decreasing = TRUE),]
-df_country <- head(df_country, 10)
+df_country <- pivot_wider(df_country,names_from = Gender, values_from = usr_cnt )
+df_country <- df_country %>% replace(is.na(.), 0)
+names(df_country)[names(df_country) == 1] <- 'Male'
+names(df_country)[names(df_country) == '0'] <- 'Female'
 
-country_nm <- df_country$`Country Name`
-Count <- df_country$usr_cnt
-
-#df_country
+df_country$total <- df_country$Male + df_country$Female
+df_country <- df_country[order(df_country$total, decreasing = TRUE),]
+df_country <- head(df_country, 11)
+df_country <- df_country[(2:11),]
+write.csv(df_country,"df_country.csv", row.names = FALSE)
 
 fig_cntry <- plot_ly(
   df_country,
-  x = ~reorder(country_nm,Count),
-  y = ~Count,
+  x = ~reorder(Country_Name, Male),
+  y = ~Male,
   type = "bar",
-  text = paste0(as.character(round(Count/1000)),"K"), textposition = 'auto'
-  
-)
+  name = 'Male',
+  textposition = 'auto')  %>%
+  add_trace(y = ~Female, name = 'Females')  %>% 
+  layout(yaxis = list(title = 'Count of Users'), barmode = 'stack')
+
 fig_cntry
+
 ###########################
 
 rgn_plt <- base_table %>% 
@@ -414,10 +470,26 @@ map_plot <- map_plot + theme(
   axis.text.x = element_blank(),
   axis.text.y = element_blank(), axis.ticks.x = element_blank(),
   axis.ticks.y = element_blank(), axis.title = element_blank(),
-  #rect = element_blank(),
   plot.margin = unit(0 * c(-1.5, -1.5, -1.5, -1.5), "lines"))
 
 map_plot
 ###########################
+
+
+head(base_table$Country)  
+
+data <- subset(base_table, Gender ==1)
+
+data(wrld_simpl)
+myCountries = wrld_simpl@data$NAME %in% data$Country
+plot(wrld_simpl, col = c(gray(.80), "red")[myCountries+1])
+
+
+hist(base_table$txn_cnt)
+head(base_table)
+
+
+
+
 
 
