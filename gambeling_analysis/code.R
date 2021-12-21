@@ -610,6 +610,9 @@ plot(final_base_table$txn_cnt, final_base_table$amount)
 
 head(final_base_table)
 
+save(final_base_table,file='/Users/dimitrikestenbaum/Desktop/marketing_datamart/gambeling_analysis/base_table.Rdata')
+
+
 
 ##final_base_table
 #x <- "Country_Name"

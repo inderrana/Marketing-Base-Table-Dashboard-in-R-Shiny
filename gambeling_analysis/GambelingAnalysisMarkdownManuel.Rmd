@@ -4,11 +4,11 @@ author: "Dimitri Kestenbaum, Nixia Sancy, and Inder Rana"
 date: "12/17/2021"
 output: pdf_document
 ---
-
+![IESEG Logo](~/Desktop/marketing_datamart/gambeling_analysis/Ieseg School of Management.png)
 ```{r setup, include=FALSE}
 library('ggplot2')
 load("~/Desktop/marketing_datamart/gambeling_analysis/base_table.Rdata")
-knitr::opts_chunk$set(echo = TRUE,cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, warning=FALSE)
+knitr::opts_chunk$set(echo = TRUE,cache=FALSE, results=FALSE, warning=FALSE, comment=FALSE, warning=FALSE,fig.align = 'center')
 ```
 
 # Analysis Overview
@@ -42,6 +42,7 @@ summary(final_base_table$total_wins)
 ## Total bets summary sa
 summary(final_base_table$profit)
 ```
+\newpage
 **Created Metrics:**
 
 *LOR (Length of Relationship):*
@@ -193,9 +194,15 @@ The loyality metric categorizes each gambler in the dataset in one of the follow
 * Weighted RFM between 0.7 and 0.4: Hesistant customers   
 * Finally, a weighted RFM below 0.4: Needs Attention   
 
+Below is a bar chart of the frequency count of gambler loyality segments:
+```{r,echo=FALSE,cache=FALSE, warning=FALSE, comment=FALSE, warning=FALSE,message=FALSE}
 
-```{r,echo=FALSE,cache=FALSE, warning=FALSE, comment=FALSE}
-bar_chart_loyality <- ggplot(final_base_table, aes(y=Loyality)) + geom_bar()
+if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
+loyal <- final_base_table %>% filter(!is.na(Loyality)) %>%
+group_by(Loyality) %>% 
+summarise(count = n()) %>% arrange(count)
+
+bar_chart_loyality <- ggplot(loyal, aes(x=Loyality,y=count)) + geom_bar(stat='identity')
 bar_chart_loyality
 ```
 
@@ -229,4 +236,8 @@ for (i in 1:length(plot_list)) {
 * We have large population of passive or casual betters with low-frequency betting, whom are winning at a larger rate substantially than our loyalists. 
 
 * RFM is weakly correlated with profit for Bwin, and gamblers with a mid-range RFM value are our most profitable segment of gamblers.
+
+* Finally, we know that the gamblers are segmented into five different segments (Need attention, Hesitant Customers, Regular Customers, Potential Loyalists, and Loyalists). These clusters have been validated using a K-means clustering algorithm in addition to our RFM scoring system. Furthermore, we know that the quantity of gamblers in each of these bins which will be useful when targeting them in marketing campaigns.
+
+* To explore the dataset and view other relevant plots via a Shiny R app, [**click here**](https://inder-rana.shinyapps.io/gambeling_analysis_app/)  
 
