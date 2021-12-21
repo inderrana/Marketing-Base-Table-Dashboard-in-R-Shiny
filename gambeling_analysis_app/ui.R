@@ -4,7 +4,7 @@
 #
 # Find out more about building applications with Shiny here:
 #
-#    http://shiny.rstudio.com/
+#    http:/shiny.rstudio.com/
 
 
 library(shiny)
@@ -31,23 +31,29 @@ if(!require("dashboardthemes")) install.packages("dashboardthemes"); library("da
 if(!require("sqldf")) install.packages("sqldf"); library("sqldf")
 if(!require("rworldmap")) install.packages("rworldmap"); library("rworldmap")
 if(!require("priceR")) install.packages("priceR"); library("priceR")
+if(!require("rsconnect")) install.packages("rsconnect"); library("rsconnect")
+if(!require("mapproj")) install.packages("mapproj"); library("mapproj")
 
-countries_apx <- read_excel("data//appendice.xlsx", sheet = "country_nm")
+
+
+countries_apx <- read_excel("appendice.xlsx", sheet = "country_nm")
 countries_apx = unique(countries_apx$"Country Name")
 countries_apx = sort(countries_apx)
 
-product_apx <- read_excel("data//appendice.xlsx", sheet = "prod")
-language_apx <- read_excel("data//appendice.xlsx", sheet = "lang")
-app_nm_apx <- read_excel("data//appendice.xlsx", sheet = "app_nm")
+product_apx <- read_excel("appendice.xlsx", sheet = "prod")
+language_apx <- read_excel("appendice.xlsx", sheet = "lang")
+app_nm_apx <- read_excel("appendice.xlsx", sheet = "app_nm")
 
-df_donut <- read.csv("data//df_country.csv")
+df_donut <- read.csv("df_country.csv")
+
+load("base_table.Rdata")
 
 #Load base table:
-load("data//base_table.RData")
-
+#load("base_table.RData")
+  
 ###################################### UI ###################################################
 
-header <- dashboardHeader(title = "Analysis of Internet Sports Gambling")
+header <- dashboardHeader(title = "Marketing Analysis")
 
 sidebar <- dashboardSidebar( 
   
@@ -57,11 +63,11 @@ sidebar <- dashboardSidebar(
     menuItem("Summary", icon = icon("map"), tabName = "summary"),
     menuItem("Demographics", icon = icon("map"), tabName = "demographics"),
     menuItem("Product", tabName = "product", icon = icon("gamepad")),
-    menuItem("Gambleing", icon = icon("dice"), tabName = "gambleing"),
+    menuItem("Gambling", icon = icon("dice"), tabName = "gambleing"),
     menuItem("Customers Profiling", icon = icon("smile"), tabName = "customers"),
     menuItem("Conclusion", icon = icon("smile"), tabName = "conclusion"),
     menuItem("Basetable", tabName = "basetable", icon = icon("table")),
-    menuItem("Play Area", tabName = "distribution", icon = icon("users"))
+    menuItem("Play Area - Experimental", tabName = "distribution", icon = icon("users"))
       )
   )
 
@@ -76,7 +82,32 @@ body <- dashboardBody(
   ############ Tab: Overview #################
   tabItems( 
     tabItem (tabName = "overview",
-             h1("Gambling Base Table & Analysis")
+     #        ,
+    #         h3("IESEG School of Management"),
+    ##         br(),
+    #         h3("The most relevant insights from a business perspective that our analysis brought to the forefront are as follow:"),
+    #         br(),
+             mainPanel(
+               fluidRow(
+                 align = "center",
+                 img(src='ieseg.png'),
+                 h1(tags$span(style = "color: #fcba03;", "IESEG School of Management")),
+                 br(),br(),
+                 h1(tags$span(style = "color: #ffffff;", "Business Analysis Tools: Open Source")),
+                 
+                 br(),br(),
+                 h1(tags$span(style = "color: #ffffff;", "Descriptive Analytics for an Online Gambling Company")),
+                 br(),br(),br(),
+                 h3(tags$span(style = "color: #ffffff;", "A group project by:")),
+                 h3(tags$span(style = "color: #ffffff;", "Inderpreet RANA, Dimitri KESTENBAUM & Nixia sancy JOHN")),
+                 
+               ), width = 12
+             )
+    
+             
+             
+             
+             
     ),
     
     ############ Tab: summary #################    
@@ -96,6 +127,9 @@ body <- dashboardBody(
              
              
     ),
+    
+    
+    
     
     ############ Tab: base table #################    
     tabItem (tabName = "basetable",
@@ -123,7 +157,7 @@ body <- dashboardBody(
                  mainPanel(
                    column(width=11,
                           fluidRow(height = 200,
-                                   h3("Global Presence"), 
+                                   h3("EU Presence"), 
                                    plotOutput("eu_map", width = "100%")
                           )))),
         tabPanel("Top Countries by Users", br(),
@@ -144,6 +178,7 @@ body <- dashboardBody(
                  mainPanel(
                    column(width=11,
                           fluidRow(height = 200,
+                                   h3("Gender Distribution in Germany"), 
                                    plotOutput("demographics_de6", width = "100%")
                           )))),
         
@@ -151,7 +186,7 @@ body <- dashboardBody(
                  mainPanel(
                    column(width=11,
                           fluidRow(height = 200,
-                                   h3("Top countries by users - Excluding Germany"), 
+                                   h3("Analysis of customer from Germany"), 
                                    box(plotlyOutput("demographics_de"), width = 6),
                                    box(plotlyOutput("demographics_de2"), width = 6),
                                    box(plotlyOutput("demographics_de3"), width = 6),
@@ -216,6 +251,7 @@ body <- dashboardBody(
 tabItem (tabName = "distribution",  fluidRow(
   # Source Page Header
   titlePanel("Play area for custom ploting"),
+  h4("Does not work when deployed :("),
   tabsetPanel(
     tabPanel("Hist",  br(),
              mainPanel(
@@ -275,8 +311,34 @@ tabItem (tabName = "customers",  fluidRow(
                                plotlyOutput("plt_language", width = "100%")
                       ))))
     
-  )))
+  ))),
 
+
+#############################################
+tabItem (tabName = "conclusion",
+         fluidRow(
+           img(src='conc.png', align = "left", height = 80),
+           br(),br(),br(),br(),
+           box(
+           br(),
+           h3("The most relevant insights from a business perspective that our analysis brought to the forefront are as follow:"),
+           br(),
+           h4(tags$div(
+            tags$ul(tags$li("We have a small population of loyalists with a mid-range betting frequency, who seldomly win big, but bet a lot of money, making them our most profitable gamblers.")
+                          )),
+           h4(tags$div(
+           tags$ul(tags$li("We have large population of passive or casual betters with low-frequency betting, whom are winning at a larger rate substantially than our loyalists")
+          ))),
+           h4(tags$div(
+           tags$ul(tags$li("RFM is weakly correlated with profit for Bwin, and gamblers with a mid-range RFM value are our
+            most profitable segment of gamblers.")))),
+          h4(tags$div(
+            tags$ul(tags$li("The majority of the customer base is from Germany or from Europe, hence we need to focus more on the customers from other regions and analyze why they don't use our products")))),
+          h4(tags$div(
+            tags$ul(tags$li("We can do a further analysis of the customer segments if we get more data points such as customer Age, Income etc."))))
+
+           )
+           , width = 12) ))
 
     
   ))# end of tab item and body      

@@ -31,7 +31,7 @@ if(!require("rworldmap")) install.packages("rworldmap"); library("rworldmap")
 options(scipen = 20)
 
 getwd()
-setwd("C:\\Users\\irana\\OneDrive - IESEG\\Documents\\GitHub\\marketing_datamart\\gambeling_analysis_app")
+#setwd("C:\\Users\\irana\\OneDrive - IESEG\\Documents\\GitHub\\marketing_datamart\\gambeling_analysis_app")
 #setwd("/Users/inder/Dropbox/My Mac (Inders-MacBook-Pro.local)/Documents/GitHub/marketing_datamart/gambeling_analysis")
 
 
@@ -246,7 +246,7 @@ names(UserDailyAggregation_rfm_2)[1] <- 'UserID'
 
 ###########################
 
-###########################
+###########################merge tables#######################
 
 base_table <- merge(x= Demographics,y=uda_cleaned,by='UserID',all.x=TRUE)
 base_table <- left_join(base_table,PokerChipConversions_2,by='UserID')

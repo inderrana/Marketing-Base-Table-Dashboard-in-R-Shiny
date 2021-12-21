@@ -4,19 +4,19 @@
 #
 # Find out more about building applications with Shiny here:
 #
-#    http://shiny.rstudio.com/
+#    http:/shiny.rstudio.com/
 #
 
 library(shiny)
 
-countries_apx <- read_excel("data//appendice.xlsx", sheet = "country_nm")
-product_apx <- read_excel("data//appendice.xlsx", sheet = "prod")
-language_apx <- read_excel("data//appendice.xlsx", sheet = "lang")
-app_nm_apx <- read_excel("data//appendice.xlsx", sheet = "app_nm")
+countries_apx <- read_excel("appendice.xlsx", sheet = "country_nm")
+product_apx <- read_excel("appendice.xlsx", sheet = "prod")
+language_apx <- read_excel("appendice.xlsx", sheet = "lang")
+app_nm_apx <- read_excel("appendice.xlsx", sheet = "app_nm")
 
 
 
-load("data//base_table.RData")
+load("base_table.Rdata")
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
@@ -55,7 +55,7 @@ shinyServer(function(input, output) {
     
     ################demographics###########
     output$demographics <- renderPlotly({
-        df_donut <- read.csv("data//df_donut.csv")
+        df_donut <- read.csv("df_donut.csv")
         
         plot_ly(labels = df_donut$country, values = df_donut$count)  %>% 
             plotly::add_pie(hole = 0.5) %>% 
@@ -68,7 +68,7 @@ shinyServer(function(input, output) {
    
     
     output$demographics2 <- renderPlotly({
-    df_country <- read.csv("data//df_country.csv")
+    df_country <- read.csv("df_country.csv")
     fig_cntry <- plot_ly(
         df_country,
         x = ~reorder(Country_Name, Male),
@@ -299,7 +299,7 @@ shinyServer(function(input, output) {
             #create annotation for most extreme outlier, displaying their ID
             annotate(geom='text',x = 175, y= 1070000, label='Gambler ID with highest winnings',color='blue')
         
-        #code adapted and inspired from this forum thread: https://stackoverflow.com/questions/1923273/counting-the-number-of-elements-with-the-values-of-x-in-a-vector
+        #code adapted and inspired from this forum thread: https:/stackoverflow.com/questions/1923273/counting-the-number-of-elements-with-the-values-of-x-in-a-vector
         scatter_plot_monetary_value_1 <- lapply(final_base_table[1], function(data) scatter_plot_monetary_value +
                                                     geom_jitter(alpha=0.5) + 
                                                     theme_light(base_size=11) + 
@@ -311,14 +311,17 @@ shinyServer(function(input, output) {
     })
     
     output$distribution <- renderPlot({
-        hist(final_base_table[input$var])
+        load("base_table.Rdata")
+        xvar <- input$var
+        hist(final_base_table[xvar])
     })
     
     
     output$playplots <- renderPlot({
-        #plot_ly(final_base_table, x = ~input$var_x, y= input$var_y, type = "bar")
-        ggplot(data=final_base_table, aes(x=input$var_x, y=input$var_y)) +
-            geom_line(stat="identity")              
+        load("base_table.Rdata")
+        varx <- input$var_x
+        vary <- input$var_y
+        ggplot(data=final_base_table, aes(x=varx, y=vary)) + geom_bar(stat="identity") 
         
 
     })
@@ -338,7 +341,7 @@ shinyServer(function(input, output) {
         
         rgn_plt <- rename(rgn_plt, Country = region)
         
-        ctry_map_df <- read_excel("data//appendice.xlsx", sheet = "country_nm")
+        ctry_map_df <- read_excel("appendice.xlsx", sheet = "country_nm")
         
         # Get the world map
         worldMap <- getMap()
@@ -394,6 +397,21 @@ shinyServer(function(input, output) {
     )
     
     output$plt_clustering <- renderPlotly({
+        
+        base_cluster <- final_base_table
+        nums <- unlist(lapply(base_cluster, is.numeric))  
+        base_cluster <- base_cluster[ , nums]
+        data <- base_cluster
+        tmp <- cor(data)
+        tmp[upper.tri(tmp)] <- 0
+        diag(tmp) <- 0
+        
+        data.new <- 
+            data[, !apply(tmp, 2, function(x) any(abs(x) > 0.99, na.rm = TRUE))]
+        head(data.new)
+        
+        scaled_data <- scale(data.new)
+        
         kmeans <- kmeans(scaled_data, 5, nstart=1,iter.max = 20 )
         
         
@@ -420,6 +438,21 @@ shinyServer(function(input, output) {
     ##########custom clusters#################
     
     output$plt_clustering_cstm <- renderPlotly({
+        
+        base_cluster <- final_base_table
+        nums <- unlist(lapply(base_cluster, is.numeric))  
+        base_cluster <- base_cluster[ , nums]
+        data <- base_cluster
+        tmp <- cor(data)
+        tmp[upper.tri(tmp)] <- 0
+        diag(tmp) <- 0
+        
+        data.new <- 
+            data[, !apply(tmp, 2, function(x) any(abs(x) > 0.99, na.rm = TRUE))]
+        head(data.new)
+        
+        scaled_data <- scale(data.new)
+        
         kmeans <- kmeans(scaled_data, input$ncluster, nstart=1,iter.max = 20 )
         
         
