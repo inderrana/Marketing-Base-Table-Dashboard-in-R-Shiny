@@ -83,6 +83,212 @@ shinyServer(function(input, output) {
     
     })
     
+    
+    output$demographics_de <- renderPlotly({
+        df_country_de <- final_base_table 
+        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
+        df_country_de <- df_country_de %>% 
+            group_by(month, Gender) %>% 
+            summarise(avg_bets=mean(avg_bets)
+            )
+        
+        
+        df_country_de <- pivot_wider(df_country_de,names_from = Gender, values_from = avg_bets )
+        df_country_de <- df_country_de %>% replace(is.na(.), 0)
+        names(df_country_de)[names(df_country_de) == 1] <- 'Male'
+        names(df_country_de)[names(df_country_de) == '0'] <- 'Female'
+        df_country_de$total <- df_country_de$Male + df_country_de$Female
+        df_country_de <- subset(df_country_de, total > 0)
+        df_country_de
+        
+        
+        
+        fig_cntry <- plot_ly(
+            df_country_de,
+            x = ~month,
+            y = ~Male,
+            type = "bar",
+            name = 'Male',
+            textposition = 'auto')  %>%
+            add_trace(y = ~Female, name = 'Females')  %>% 
+            layout(yaxis = list(title = 'Average Bets'), barmode = 'stack')
+        fig_cntry
+        
+    })
+    
+    
+    output$demographics_de2 <- renderPlotly({
+        df_country_de <- final_base_table 
+        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
+        df_country_de <- df_country_de %>% 
+            group_by(month, Gender) %>% 
+            summarise(avg_bets=mean(avg_buy)
+            )
+        
+        
+        df_country_de <- pivot_wider(df_country_de,names_from = Gender, values_from = avg_bets )
+        df_country_de <- df_country_de %>% replace(is.na(.), 0)
+        names(df_country_de)[names(df_country_de) == 1] <- 'Male'
+        names(df_country_de)[names(df_country_de) == '0'] <- 'Female'
+        df_country_de$total <- df_country_de$Male + df_country_de$Female
+        df_country_de <- subset(df_country_de, total > 0)
+        df_country_de
+        
+        
+        
+        fig_cntry <- plot_ly(
+            df_country_de,
+            x = ~month,
+            y = ~Male,
+            type = "bar",
+            name = 'Male',
+            textposition = 'auto')  %>%
+            add_trace(y = ~Female, name = 'Females')  %>% 
+            layout(yaxis = list(title = 'Average Buys'), barmode = 'stack')
+        fig_cntry
+        
+    })
+    
+    output$demographics_de3 <- renderPlotly({
+        df_country_de <- final_base_table 
+        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
+        df_country_de <- df_country_de %>% 
+            group_by(month, Gender) %>% 
+            summarise(avg_bets=mean(avg_sell)
+            )
+        
+        
+        df_country_de <- pivot_wider(df_country_de,names_from = Gender, values_from = avg_bets )
+        df_country_de <- df_country_de %>% replace(is.na(.), 0)
+        names(df_country_de)[names(df_country_de) == 1] <- 'Male'
+        names(df_country_de)[names(df_country_de) == '0'] <- 'Female'
+        df_country_de$total <- df_country_de$Male + df_country_de$Female
+        df_country_de <- subset(df_country_de, total > 0)
+        df_country_de
+        
+        
+        
+        fig_cntry <- plot_ly(
+            df_country_de,
+            x = ~month,
+            y = ~Male,
+            type = "bar",
+            name = 'Male',
+            textposition = 'auto')  %>%
+            add_trace(y = ~Female, name = 'Females')  %>% 
+            layout(yaxis = list(title = 'Average Sells'), barmode = 'stack')
+        fig_cntry
+        
+    })
+    
+    
+    output$demographics_de4 <- renderPlotly({
+        df_country_de <- final_base_table 
+        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
+        df_country_de <- df_country_de %>% 
+            group_by(month, Gender) %>% 
+            summarise(avg_bets=mean(avg_stakes)
+            )
+        
+        
+        df_country_de <- pivot_wider(df_country_de,names_from = Gender, values_from = avg_bets )
+        df_country_de <- df_country_de %>% replace(is.na(.), 0)
+        names(df_country_de)[names(df_country_de) == 1] <- 'Male'
+        names(df_country_de)[names(df_country_de) == '0'] <- 'Female'
+        df_country_de$total <- df_country_de$Male + df_country_de$Female
+        df_country_de <- subset(df_country_de, total > 0)
+        df_country_de
+        
+        
+        
+        fig_cntry <- plot_ly(
+            df_country_de,
+            x = ~month,
+            y = ~Male,
+            type = "bar",
+            name = 'Male',
+            textposition = 'auto')  %>%
+            add_trace(y = ~Female, name = 'Females')  %>% 
+            layout(yaxis = list(title = 'Average Stakes'), barmode = 'stack')
+        fig_cntry
+        
+    })
+    
+    output$demographics_de5 <- renderPlotly({
+        df_country_de <- final_base_table 
+        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
+        df_country_de <- df_country_de %>% 
+            group_by(month, Gender) %>% 
+            summarise(avg_bets=mean(avg_wins)
+            )
+        
+        
+        df_country_de <- pivot_wider(df_country_de,names_from = Gender, values_from = avg_bets )
+        df_country_de <- df_country_de %>% replace(is.na(.), 0)
+        names(df_country_de)[names(df_country_de) == 1] <- 'Male'
+        names(df_country_de)[names(df_country_de) == '0'] <- 'Female'
+        df_country_de$total <- df_country_de$Male + df_country_de$Female
+        df_country_de <- subset(df_country_de, total > 0)
+        df_country_de
+        
+        
+        
+        fig_cntry <- plot_ly(
+            df_country_de,
+            x = ~month,
+            y = ~Male,
+            type = "bar",
+            name = 'Male',
+            textposition = 'auto')  %>%
+            add_trace(y = ~Female, name = 'Females')  %>% 
+            layout(yaxis = list(title = 'Average Wins'), barmode = 'stack')
+        fig_cntry
+        
+    })
+    
+    output$demographics_de6 <- renderPlot({
+        df_country_de <- final_base_table 
+        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
+        df_country_de <- df_country_de %>% 
+            group_by(Gender) %>% 
+            summarise(count_users=length(UserID)
+            )
+        
+        
+        df_country_de$Gender[df_country_de$Gender == 0] <- "Female"
+        df_country_de$Gender[df_country_de$Gender == 1] <- "Male"
+        df_country_de
+        # Compute percentages
+        df_country_de$fraction = df_country_de$count_users / sum(df_country_de$count_users)
+        # Compute the cumulative percentages (top of each rectangle)
+        df_country_de$ymax = cumsum(df_country_de$fraction)
+        # Compute the bottom of each rectangle
+        df_country_de$ymin = c(0, head(df_country_de$ymax, n=-1))
+        
+        #Compute label position
+        df_country_de$labelPosition <- (df_country_de$ymax + df_country_de$ymin) / 2
+        
+        # Compute a good label
+        df_country_de$label <- paste0(df_country_de$Gender, "\n", paste0((round(df_country_de$fraction,3)*100),"%"))
+        df_country_de
+        ggplot(df_country_de, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Gender)) +
+            geom_rect() +
+            geom_label( x=3.5, aes(y=labelPosition, label=label), size=6) +
+            scale_fill_brewer(palette=3) +
+            coord_polar(theta="y") +
+            theme_void() +
+            theme(legend.position = "none") +
+            xlim(c(2, 4))
+        
+    })
+    
+    
     output$gambleing <- renderPlot({
         #create plot that visualizes monetary value (gambler' winnings), frequency, and recency
         scatter_plot_monetary_value <- ggplot(base_table, aes(x=frequency,y=monetary_value,color=recency)) + 
@@ -113,6 +319,65 @@ shinyServer(function(input, output) {
         y <- input$var_y
         
         plot(final_base_table$x, final_base_table$y)
+    })
+    
+    output$map <- renderPlot({
+        data <- final_base_table
+        data(wrld_simpl)
+        myCountries = wrld_simpl@data$NAME %in% data$Country_Name
+        plot(wrld_simpl, col = c(gray(.45), "blue")[myCountries+1])
+    })
+    
+    output$eu_map <- renderPlot({
+        rgn_plt <- base_table %>% 
+            count(Country) %>% 
+            rename(region = Country)
+        rgn_plt$Category <- ifelse(rgn_plt$n <= 100, 1, ifelse(rgn_plt$n > 1000 & rgn_plt$n<20000, 2, ifelse(rgn_plt$n > 20000, 4, 3)))
+        
+        rgn_plt <- rename(rgn_plt, Country = region)
+        
+        ctry_map_df <- read_excel("data//appendice.xlsx", sheet = "country_nm")
+        
+        # Get the world map
+        worldMap <- getMap()
+        
+        # Member States of the European Union
+        europeanUnion <- c("Austria","Belgium","Bulgaria","Croatia","Cyprus",
+                           "Czech Rep.","Denmark","Estonia","Finland","France",
+                           "Germany","Greece","Hungary","Ireland","Italy","Latvia",
+                           "Lithuania","Luxembourg","Malta","Netherlands","Poland",
+                           "Portugal","Romania","Slovakia","Slovenia","Spain",
+                           "Sweden","United Kingdom")
+        # Select only the index of states member of the E.U.
+        indEU <- which(worldMap$NAME%in%europeanUnion)
+        
+        # Extract longitude and latitude border's coordinates of members states of E.U. 
+        europeCoords <- lapply(indEU, function(i){
+            df <- data.frame(worldMap@polygons[[i]]@Polygons[[1]]@coords)
+            df$region =as.character(worldMap$NAME[i])
+            colnames(df) <- list("long", "lat", "region")
+            return(df)
+        })
+        europeCoords <- do.call("rbind", europeCoords)
+        
+        world_map <- map_data("world")
+        rgn_plt_nm <- left_join(rgn_plt, ctry_map_df, by  = "Country")
+        rgn_plt_2 <- inner_join(rgn_plt_nm, europeCoords, by = c("Country Name"="region"))
+        
+        # Plot map
+        map_plot <- ggplot() + geom_polygon(data = rgn_plt_2, aes(x = long, y = lat, group = Country, fill = Category),
+                                            colour = "black", size = 0.1) +
+            coord_map(xlim = c(-13, 35),  ylim = c(32, 71))
+        
+        map_plot <- map_plot + scale_fill_gradient(name = "Users Distribution", low = "#FF0000FF", high = "#FFFF00FF", na.value = "grey50")
+        map_plot <- map_plot + theme(
+            axis.text.x = element_blank(),
+            axis.text.y = element_blank(), axis.ticks.x = element_blank(),
+            axis.ticks.y = element_blank(), axis.title = element_blank(),
+            plot.margin = unit(0 * c(-1.5, -1.5, -1.5, -1.5), "lines"))
+        
+        map_plot
+        
     })
     
     

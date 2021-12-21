@@ -95,22 +95,52 @@ body <- dashboardBody(
       titlePanel("Geo Analysis"),
     
       tabsetPanel(
-        tabPanel("Top Countries", br(),
+        tabPanel("Global Presence", br(),
+                 mainPanel(
+                   column(width=11,
+                          fluidRow(height = 200,
+                                   h3("Global Presence"), 
+                                   plotOutput("map", width = "100%")
+                          )))),
+        tabPanel("EU Presence", br(),
+                 mainPanel(
+                   column(width=11,
+                          fluidRow(height = 200,
+                                   h3("Global Presence"), 
+                                   plotOutput("eu_map", width = "100%")
+                          )))),
+        tabPanel("Top Countries by Users", br(),
                  mainPanel(
                    column(width=11,
                           fluidRow(height = 200,
                                    h3("Top countries by users"), 
                                    plotlyOutput("demographics", width = "100%")
                           )))),
-        tabPanel("Top Countries", br(),
+        tabPanel("Top Countries - Gender Distribution", br(),
                  mainPanel(
                    column(width=11,
                           fluidRow(height = 200,
                                    h3("Top countries by users - Excluding Germany"), 
                                    plotlyOutput("demographics2", width = "100%")
                           )))),
+        tabPanel("Gender Distribution - Germany", br(),
+                 mainPanel(
+                   column(width=11,
+                          fluidRow(height = 200,
+                                   plotOutput("demographics_de6", width = "100%")
+                          )))),
         
-        
+        tabPanel("Germany - Average bets by Gender", br(),
+                 mainPanel(
+                   column(width=11,
+                          fluidRow(height = 200,
+                                   h3("Top countries by users - Excluding Germany"), 
+                                   box(plotlyOutput("demographics_de"), width = 6),
+                                   box(plotlyOutput("demographics_de2"), width = 6),
+                                   box(plotlyOutput("demographics_de3"), width = 6),
+                                   box(plotlyOutput("demographics_de4"), width = 6),
+                                   box(plotlyOutput("demographics_de5"), width = 6),
+                          )))),
         
       ))),
     
