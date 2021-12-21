@@ -5,7 +5,7 @@
 # Find out more about building applications with Shiny here:
 #
 #    http://shiny.rstudio.com/
-#
+
 
 library(shiny)
 
@@ -30,8 +30,7 @@ if(!require("shinythemes")) install.packages("shinythemes"); library("shinytheme
 if(!require("dashboardthemes")) install.packages("dashboardthemes"); library("dashboardthemes")
 if(!require("sqldf")) install.packages("sqldf"); library("sqldf")
 if(!require("rworldmap")) install.packages("rworldmap"); library("rworldmap")
-
-
+if(!require("priceR")) install.packages("priceR"); library("priceR")
 
 countries_apx <- read_excel("data//appendice.xlsx", sheet = "country_nm")
 countries_apx = unique(countries_apx$"Country Name")
@@ -59,7 +58,7 @@ sidebar <- dashboardSidebar(
     menuItem("Demographics", icon = icon("map"), tabName = "demographics"),
     menuItem("Product", tabName = "product", icon = icon("gamepad")),
     menuItem("Gambleing", icon = icon("dice"), tabName = "gambleing"),
-    menuItem("Top Customers", icon = icon("smile"), tabName = "topcustomers"),
+    menuItem("Customers Profiling", icon = icon("smile"), tabName = "customers"),
     menuItem("Conclusion", icon = icon("smile"), tabName = "conclusion"),
     menuItem("Basetable", tabName = "basetable", icon = icon("table")),
     menuItem("Play Area", tabName = "distribution", icon = icon("users"))
@@ -82,7 +81,20 @@ body <- dashboardBody(
     
     ############ Tab: summary #################    
     tabItem (tabName = "summary",
-             h1("Summary")
+             fluidRow(
+             h1("Summary"),
+             box(
+               h2(valueBoxOutput("profit_box")),
+               h2(valueBoxOutput("buy_box")),
+               h2(valueBoxOutput("sell_box")),
+               h2(valueBoxOutput("wins_box")),
+               h2(valueBoxOutput("stakes_box")),
+               h2(valueBoxOutput("bets_box")),
+             
+             )             
+             )
+             
+             
     ),
     
     ############ Tab: base table #################    
@@ -163,19 +175,31 @@ body <- dashboardBody(
                                    
                           )))),
     
-        tabPanel("Source By Interactive Selection", br(),
-                 sidebarPanel(
+        tabPanel("Best & Worst Performing Applications", br(),
+                   mainPanel("",
+                   fluidRow(
+                   splitLayout(cellWidths = c("50%", "50%")),
 #                   selectInput("Country", "Select a country",
 #                               c("Germany","Turkey","Poland","Spain","Greece","France","Denmark","Austria","Italy","Switzerland"),
 #                               selected ="Germany"),
-                   sliderInput("Agegroup", "Select age",
-                               min=10, max=100,value=25, step=5)  
+                                      box(sliderInput("top_apps", "Select number of apps to compare",
+                               min=1, max=20,value=5, step=2),
+                               br(),
+                   plotlyOutput("plt_top_apps"))
+                   ,
+                   
+                   box(sliderInput("bottom_apps", "Select number of apps to compare",
+                               min=1, max=20,value=5, step=2),
+                       br(),
+                   plotlyOutput("plt_bottom_apps")))
+                   
+                   
+                       
                  ),
-                 
                  mainPanel(
                    column(width=11,
                           fluidRow(height = 200,
-                                   h4("Popular Applications by Age & Country"),plotOutput("SourceCountry")
+                                   
                                    
                           ))))                  
       ))),
@@ -188,7 +212,7 @@ body <- dashboardBody(
              
     ),
 
-#############Tab: Product  #################
+#############Tab: distribution/playplots  #################
 tabItem (tabName = "distribution",  fluidRow(
   # Source Page Header
   titlePanel("Play area for custom ploting"),
@@ -216,6 +240,41 @@ tabItem (tabName = "distribution",  fluidRow(
                                plotOutput("playplots", width = "100%")
                                
                       ))))
+  ))),
+
+############tab: customer profiling##########
+tabItem (tabName = "customers",  fluidRow(
+  # Source Page Header
+  titlePanel("Play area for custom ploting"),
+  tabsetPanel(
+    tabPanel("Segments by Loyalty Scores",  br(),
+             mainPanel(
+               column(width=11,
+                      fluidRow(height = 200,
+                               box(h4("Segments by Loyalty Scores"),
+                               plotlyOutput("plt_loyalty", width = "100%")),
+                               box(h4("Segments by Clustering Scores"),
+                               plotlyOutput("plt_clustering", width = "100%"))
+                               
+                      )))),
+    tabPanel("Segments by Clustering",  br(),
+             mainPanel(
+               column(width=11,
+                      fluidRow(height = 200,
+                               selectInput("ncluster", "Select number of clusters",
+                                               c(2,3,4,5,6,7,8,9,10),
+                                               selected =5),
+                               
+                               plotlyOutput("plt_clustering_cstm", width = "100%")
+                               
+                      )))),
+    tabPanel("Customer Languages",  br(),
+             mainPanel(
+               column(width=11,
+                      fluidRow(height = 200,
+                               plotlyOutput("plt_language", width = "100%")
+                      ))))
+    
   )))
 
 
