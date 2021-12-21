@@ -22,6 +22,10 @@ if (!require("mapproj")) install.packages("mapproj"); library("mapproj");
 if (!require("rworldmap")) install.packages("rworldmap"); library("rworldmap");
 if(!require("maptools")) install.packages("maptools"); library("maptools")
 if(!require("sqldf")) install.packages("sqldf"); library("sqldf")
+if(!require("maptools")) install.packages("maptools"); library("maptools")
+
+if(!require("rworldmap")) install.packages("rworldmap"); library("rworldmap")
+
 
 options(scipen = 20)
 
@@ -320,14 +324,20 @@ glimpse(final_base_table)
 #final_base_table %>% replace(is.na(.), 0)
 
 save(final_base_table, file = "data//base_table.RData")
-
+ls()
 
 ###########################
-
+remove_list <- c("base_table", "numeric_col_na_to_0", "Demographics_paydate", "PokerChipConversions", "p_id", 
+                 "october", "numeric_col_na_to_0", "PokerChipConversions_2", "PokerChipConversions_3", "PokerChipConversions_buy"
+                 , "PokerChipConversions_sell", "UserDailyAggregation", "UserDailyAggregation_1", "UserDailyAggregation_2"
+                 , "UserDailyAggregation_rfm", "UserDailyAggregation_rfm_2", "UserDailyAggregation_rfm_c" ,"remove_list",
+                 "uda_cleaned", "uda_filtered", "uda_poker_table", "Demographics", "data")
+#remove_list
+rm(list = remove_list)
 
 ###########################
 #create plot that visualizes monetary value (gambler' winnings), frequency, and recency
-scatter_plot_monetary_value <- ggplot(base_table, aes(x=frequency,y=monetary_value,color=recency)) + 
+scatter_plot_monetary_value <- ggplot(final_base_table, aes(x=frequency,y=monetary_value,color=recency)) + 
   ggtitle('Gambler total winnings against frequency') + 
   xlab('Frequency (days)') + 
   ylab('Total winnings (Euros)') + 
@@ -335,11 +345,11 @@ scatter_plot_monetary_value <- ggplot(base_table, aes(x=frequency,y=monetary_val
   annotate(geom='text',x = 175, y= 1070000, label='Gambler ID with highest winnings',color='blue')
 
 #code adapted and inspired from this forum thread: https://stackoverflow.com/questions/1923273/counting-the-number-of-elements-with-the-values-of-x-in-a-vector
-scatter_plot_monetary_value_1 <- lapply(base_table[1], function(data) scatter_plot_monetary_value +
+scatter_plot_monetary_value_1 <- lapply(final_base_table[1], function(data) scatter_plot_monetary_value +
                                           geom_jitter(alpha=0.5) + 
                                           theme_light(base_size=11) + 
                                           theme(plot.title = element_text(hjust = 0.5)) + 
-                                          geom_text(aes(label= ifelse(base_table$monetary_value > quantile(base_table$monetary_value, 0.9999999),as.character(base_table$UserID),'')),hjust=0,vjust=0))
+                                          geom_text(aes(label= ifelse(final_base_table$monetary_value > quantile(final_base_table$monetary_value, 0.9999999),as.character(final_base_table$UserID),'')),hjust=0,vjust=0))
 
 scatter_plot_monetary_value_1
 ###########################
@@ -348,7 +358,7 @@ scatter_plot_monetary_value_1
 
 #base_table_p <- subset(base_table, Country %in% input$Country)
 
-prod_counts = c(sum(base_table$procuct_1_cnt),sum(base_table$product_2_cnt),sum(base_table$product_4_cnt),sum(base_table$product_5_cnt),sum(base_table$product_6_cnt),sum(base_table$product_7_cnt),sum(base_table$product_8_cnt))
+prod_counts = c(sum(final_base_table$procuct_1_cnt),sum(final_base_table$product_2_cnt),sum(final_base_table$product_4_cnt),sum(final_base_table$product_5_cnt),sum(final_base_table$product_6_cnt),sum(final_base_table$product_7_cnt),sum(final_base_table$product_8_cnt))
 
 df_product_counts <- data.frame(
   products = as.factor(c('Prod_1','Prod_2','Prod_4','Prod_5','Prod_6','Prod_7','Prod_8')),
@@ -526,7 +536,7 @@ ggplot(df_country_de, aes(ymax=ymax, ymin=ymin, xmax=4, xmin=3, fill=Gender)) +
 
 ###########################
 
-rgn_plt <- base_table %>% 
+rgn_plt <- final_base_table %>% 
                       count(Country) %>% 
                       rename(region = Country)
 rgn_plt$Category <- ifelse(rgn_plt$n <= 100, 1, ifelse(rgn_plt$n > 1000 & rgn_plt$n<20000, 2, ifelse(rgn_plt$n > 20000, 4, 3)))
@@ -576,6 +586,10 @@ map_plot <- map_plot + theme(
 map_plot
 ###########################
 
+
+
+###########################
+
 data <- final_base_table
 data(wrld_simpl)
 myCountries = wrld_simpl@data$NAME %in% data$Country_Name
@@ -583,18 +597,24 @@ plot(wrld_simpl, col = c(gray(.45), "blue")[myCountries+1])
 
 
 
-
-head(base_table$Country)  
+#head(base_table$Country)  
 
 #data <- subset(base_table, Gender ==1)
 data(wrld_simpl)
 myCountries = wrld_simpl@data$NAME %in% data$Country
 plot(wrld_simpl, col = c(gray(.80), "red")[myCountries+1])
 
+hist(final_base_table$txn_cnt)
 
 plot(final_base_table$txn_cnt, final_base_table$amount)
 
+head(final_base_table)
 
-head(base_table)
 
-
+##final_base_table
+#x <- "Country_Name"
+#y <- "txn_cnt"
+#data_temp <- final_base_table %>% 
+#  group_by_(x) %>% 
+#  summarise_(y=sum(y))
+#data_temp

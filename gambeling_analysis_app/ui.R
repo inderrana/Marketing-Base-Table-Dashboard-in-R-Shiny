@@ -13,6 +13,7 @@ library(shiny)
 if(!require("shiny")) install.packages("shiny"); library("shiny")
 if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
 if(!require("plotly")) install.packages("plotly"); library("plotly")
+if(!require("readxl")) install.packages("readxl"); library("readxl")
 if(!require("ggplot2")) install.packages("ggplot2"); library("ggplot2")
 if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
 if(!require("DT")) install.packages("DT"); library("DT")
@@ -21,13 +22,14 @@ if(!require("tidyr")) install.packages("tidyr"); library("tidyr")
 if(!require("tidyr")) install.packages("tidyr"); library("tidyr")
 if(!require("stringr")) install.packages("stringr"); library("stringr")
 if(!require("maps")) install.packages("maps"); library("maps")
+if(!require("maptools")) install.packages("maptools"); library("maptools")
 if(!require("data.table")) install.packages("data.table"); library("data.table")
 if(!require("shinydashboard")) install.packages("shinydashboard"); library("shinydashboard")
 if(!require("rsconnect")) install.packages("rsconnect"); library("rsconnect")
 if(!require("shinythemes")) install.packages("shinythemes"); library("shinythemes")
 if(!require("dashboardthemes")) install.packages("dashboardthemes"); library("dashboardthemes")
 if(!require("sqldf")) install.packages("sqldf"); library("sqldf")
-
+if(!require("rworldmap")) install.packages("rworldmap"); library("rworldmap")
 
 
 
@@ -85,7 +87,10 @@ body <- dashboardBody(
     
     ############ Tab: base table #################    
     tabItem (tabName = "basetable",
-             div(style = 'overflow-x: scroll', DT::dataTableOutput('Basetable'))),
+             downloadButton("downloadData", "Download"),
+             div(style = 'overflow-x: scroll', DT::dataTableOutput('Basetable'))
+             ),
+    
     
     
     ############ Tab: Demographics #################     

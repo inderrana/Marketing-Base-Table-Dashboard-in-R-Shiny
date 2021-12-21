@@ -291,7 +291,7 @@ shinyServer(function(input, output) {
     
     output$gambleing <- renderPlot({
         #create plot that visualizes monetary value (gambler' winnings), frequency, and recency
-        scatter_plot_monetary_value <- ggplot(base_table, aes(x=frequency,y=monetary_value,color=recency)) + 
+        scatter_plot_monetary_value <- ggplot(final_base_table, aes(x=frequency,y=monetary_value,color=recency)) + 
             ggtitle('Gambler total winnings against frequency') + 
             xlab('Frequency (days)') + 
             ylab('Total winnings (Euros)') + 
@@ -299,11 +299,11 @@ shinyServer(function(input, output) {
             annotate(geom='text',x = 175, y= 1070000, label='Gambler ID with highest winnings',color='blue')
         
         #code adapted and inspired from this forum thread: https://stackoverflow.com/questions/1923273/counting-the-number-of-elements-with-the-values-of-x-in-a-vector
-        scatter_plot_monetary_value_1 <- lapply(base_table[1], function(data) scatter_plot_monetary_value +
+        scatter_plot_monetary_value_1 <- lapply(final_base_table[1], function(data) scatter_plot_monetary_value +
                                                     geom_jitter(alpha=0.5) + 
                                                     theme_light(base_size=11) + 
                                                     theme(plot.title = element_text(hjust = 0.5)) + 
-                                                    geom_text(aes(label= ifelse(base_table$monetary_value > quantile(base_table$monetary_value, 0.9999999),as.character(base_table$UserID),'')),hjust=0,vjust=0))
+                                                    geom_text(aes(label= ifelse(final_base_table$monetary_value > quantile(final_base_table$monetary_value, 0.9999999),as.character(final_base_table$UserID),'')),hjust=0,vjust=0))
         
         scatter_plot_monetary_value_1
         
@@ -318,7 +318,13 @@ shinyServer(function(input, output) {
         x <- input$var_x
         y <- input$var_y
         
-        plot(final_base_table$x, final_base_table$y)
+        data_temp <- final_base_table %>% 
+            group_by(x) %>% 
+            summarise(y=mean(y),
+                      )
+        
+        
+        plot(data_temp$x, data_temp$y)
     })
     
     output$map <- renderPlot({
@@ -329,7 +335,7 @@ shinyServer(function(input, output) {
     })
     
     output$eu_map <- renderPlot({
-        rgn_plt <- base_table %>% 
+        rgn_plt <- final_base_table %>% 
             count(Country) %>% 
             rename(region = Country)
         rgn_plt$Category <- ifelse(rgn_plt$n <= 100, 1, ifelse(rgn_plt$n > 1000 & rgn_plt$n<20000, 2, ifelse(rgn_plt$n > 20000, 4, 3)))
@@ -379,6 +385,17 @@ shinyServer(function(input, output) {
         map_plot
         
     })
+    
+    
+    # Downloadable csv of selected dataset ----
+    output$downloadData <- downloadHandler(
+        filename = function() {
+            paste('marketing_base_table', ".csv", sep = "")
+        },
+        content = function(file) {
+            write.csv(final_base_table, file, row.names = FALSE)
+        }
+    )
     
     
     }) #Server End
