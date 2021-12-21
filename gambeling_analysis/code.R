@@ -83,10 +83,10 @@ Demographics$RTFP <- Demographics$FirstPay - Demographics$RegDate
 #calculate dummy variable for each first play category (sports book, casino play,
 #first games play, first poker play) which indicates whether the indiviual
 #has ever partook in these play categories
-Demographics$SpPlayed <- ifelse(is.na(Demographics$FirstSp),1,0)
-Demographics$CaPlayed <- ifelse(is.na(Demographics$FirstCa),1,0)
-Demographics$GaPlayed <- ifelse(is.na(Demographics$FirstGa),1,0)
-Demographics$PoPlayed <- ifelse(is.na(Demographics$FirstPo),1,0)
+Demographics$SpPlayed <- ifelse(is.na(Demographics$FirstSp),0,1)
+Demographics$CaPlayed <- ifelse(is.na(Demographics$FirstCa),0,1)
+Demographics$GaPlayed <- ifelse(is.na(Demographics$FirstGa),0,1)
+Demographics$PoPlayed <- ifelse(is.na(Demographics$FirstPo),0,1)
 
 sapply(Demographics,function(x) sum(is.na(x)))
 
@@ -609,6 +609,9 @@ hist(final_base_table$txn_cnt)
 plot(final_base_table$txn_cnt, final_base_table$amount)
 
 head(final_base_table)
+
+save(final_base_table,file='/Users/dimitrikestenbaum/Desktop/marketing_datamart/gambeling_analysis/base_table.Rdata')
+
 
 
 ##final_base_table
