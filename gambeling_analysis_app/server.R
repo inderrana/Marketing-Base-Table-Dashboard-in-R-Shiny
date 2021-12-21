@@ -55,7 +55,7 @@ shinyServer(function(input, output) {
     
     ################demographics###########
     output$demographics <- renderPlotly({
-        df_donut <- read.csv("df_donut.csv")
+        df_donut <- read.csv("data//df_donut.csv")
         
         plot_ly(labels = df_donut$country, values = df_donut$count)  %>% 
             plotly::add_pie(hole = 0.5) %>% 
@@ -68,7 +68,7 @@ shinyServer(function(input, output) {
    
     
     output$demographics2 <- renderPlotly({
-    df_country <- read.csv("df_country.csv")
+    df_country <- read.csv("data//df_country.csv")
     fig_cntry <- plot_ly(
         df_country,
         x = ~reorder(Country_Name, Male),
@@ -86,7 +86,7 @@ shinyServer(function(input, output) {
     
     output$demographics_de <- renderPlotly({
         df_country_de <- final_base_table 
-        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de <- dplyr::filter(df_country_de, Country_Name == "Germany")
         df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
         df_country_de <- df_country_de %>% 
             group_by(month, Gender) %>% 
@@ -120,7 +120,7 @@ shinyServer(function(input, output) {
     
     output$demographics_de2 <- renderPlotly({
         df_country_de <- final_base_table 
-        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de <- dplyr::filter(df_country_de, Country_Name == "Germany")
         df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
         df_country_de <- df_country_de %>% 
             group_by(month, Gender) %>% 
@@ -152,27 +152,28 @@ shinyServer(function(input, output) {
     })
     
     output$demographics_de3 <- renderPlotly({
-        df_country_de <- final_base_table 
-        df_country_de <- filter(df_country_de, Country_Name == "Germany")
-        df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
-        df_country_de <- df_country_de %>% 
-            group_by(month, Gender) %>% 
-            summarise(avg_bets=mean(avg_sell)
+        #df_country_de3
+        df_country_de3 <- final_base_table 
+        df_country_de3 <- dplyr::filter(df_country_de3, Country_Name == "Germany")
+        df_country_de3$month <- factor(strftime(df_country_de3$FirstPay, '%b'), levels = month.abb)
+        df_country_de3 <- df_country_de3 %>% 
+            dplyr::group_by(month, Gender) %>% 
+            dplyr::summarise(avg_bets=mean(avg_sell)
             )
         
         
-        df_country_de <- pivot_wider(df_country_de,names_from = Gender, values_from = avg_bets )
-        df_country_de <- df_country_de %>% replace(is.na(.), 0)
-        names(df_country_de)[names(df_country_de) == 1] <- 'Male'
-        names(df_country_de)[names(df_country_de) == '0'] <- 'Female'
-        df_country_de$total <- df_country_de$Male + df_country_de$Female
-        df_country_de <- subset(df_country_de, total > 0)
-        df_country_de
+        df_country_de3 <- pivot_wider(df_country_de3,names_from = Gender, values_from = avg_bets )
+        df_country_de3 <- df_country_de3 %>% replace(is.na(.), 0)
+        names(df_country_de3)[names(df_country_de3) == 1] <- 'Male'
+        names(df_country_de3)[names(df_country_de3) == '0'] <- 'Female'
+        df_country_de3$total <- df_country_de3$Male + df_country_de3$Female
+        df_country_de3 <- subset(df_country_de3, total > 0)
+        #df_country_de3
         
         
         
         fig_cntry <- plot_ly(
-            df_country_de,
+            df_country_de3,
             x = ~month,
             y = ~Male,
             type = "bar",
@@ -187,7 +188,7 @@ shinyServer(function(input, output) {
     
     output$demographics_de4 <- renderPlotly({
         df_country_de <- final_base_table 
-        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de <- dplyr::filter(df_country_de, Country_Name == "Germany")
         df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
         df_country_de <- df_country_de %>% 
             group_by(month, Gender) %>% 
@@ -220,7 +221,7 @@ shinyServer(function(input, output) {
     
     output$demographics_de5 <- renderPlotly({
         df_country_de <- final_base_table 
-        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de <- dplyr::filter(df_country_de, Country_Name == "Germany")
         df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
         df_country_de <- df_country_de %>% 
             group_by(month, Gender) %>% 
@@ -253,7 +254,7 @@ shinyServer(function(input, output) {
     
     output$demographics_de6 <- renderPlot({
         df_country_de <- final_base_table 
-        df_country_de <- filter(df_country_de, Country_Name == "Germany")
+        df_country_de <- dplyr::filter(df_country_de, Country_Name == "Germany")
         df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
         df_country_de <- df_country_de %>% 
             group_by(Gender) %>% 
@@ -263,7 +264,7 @@ shinyServer(function(input, output) {
         
         df_country_de$Gender[df_country_de$Gender == 0] <- "Female"
         df_country_de$Gender[df_country_de$Gender == 1] <- "Male"
-        df_country_de
+#        df_country_de
         # Compute percentages
         df_country_de$fraction = df_country_de$count_users / sum(df_country_de$count_users)
         # Compute the cumulative percentages (top of each rectangle)
@@ -310,21 +311,16 @@ shinyServer(function(input, output) {
     })
     
     output$distribution <- renderPlot({
-    hist(final_base_table[input$var])
+        hist(final_base_table[input$var])
     })
     
     
     output$playplots <- renderPlot({
-        x <- input$var_x
-        y <- input$var_y
+        #plot_ly(final_base_table, x = ~input$var_x, y= input$var_y, type = "bar")
+        ggplot(data=final_base_table, aes(x=input$var_x, y=input$var_y)) +
+            geom_line(stat="identity")              
         
-        data_temp <- final_base_table %>% 
-            group_by(x) %>% 
-            summarise(y=mean(y),
-                      )
-        
-        
-        plot(data_temp$x, data_temp$y)
+
     })
     
     output$map <- renderPlot({
@@ -397,7 +393,183 @@ shinyServer(function(input, output) {
         }
     )
     
+    output$plt_clustering <- renderPlotly({
+        kmeans <- kmeans(scaled_data, 5, nstart=1,iter.max = 20 )
+        
+        
+        scaled_data_final <- final_base_table %>%
+            mutate(
+                cluster = kmeans$cluster
+            )
+        
+        scaled_data_final <- scaled_data_final %>%
+            group_by(cluster)  %>%
+            summarise(count = n())
+        
+        ###########Plot CLusters###########
+        plot_ly(
+            scaled_data_final,
+            x = ~reorder(cluster,count),
+            y = ~count,
+            name = "Clusters",
+            type = "bar"
+        )
+    })    
+    
+    
+    ##########custom clusters#################
+    
+    output$plt_clustering_cstm <- renderPlotly({
+        kmeans <- kmeans(scaled_data, input$ncluster, nstart=1,iter.max = 20 )
+        
+        
+        scaled_data_final <- final_base_table %>%
+            mutate(
+                cluster = kmeans$cluster
+            )
+        
+        scaled_data_final <- scaled_data_final %>%
+            group_by(cluster)  %>%
+            summarise(count = n())
+    
+        
+        ###########Plot CLusters###########
+        plot_ly(
+            scaled_data_final,
+            x = ~reorder(cluster,count),
+            y = ~count,
+            name = "Clusters",
+            type = "bar"
+        )
+    })    
+    
+    ##########################################
+        ################Plot Loyalty##################
+        output$plt_loyalty <- renderPlotly({
+        loyal <- final_base_table %>%
+            group_by(Loyality)  %>%
+            summarise(count = n())
+        
+        plot_ly(
+            loyal,
+            x = ~reorder(Loyality,count),
+            y = ~count,
+            name = "Clusters",
+            type = "bar"
+        )
+        
+    })
+    
+    output$plt_language <- renderPlotly({
+        #############Plot Languages#####################
+        lang <- final_base_table %>%
+            group_by(`Language Description`)  %>%
+            summarise(count = n())
+        
+        plot_ly(
+            lang,
+            x = ~reorder(`Language Description`, count),
+            y = ~count,
+            name = "Languages",
+            type = "bar"
+        )
+        
+    })
+    
+    output$plt_top_apps <- renderPlotly({
+        
+        applications_plt <- final_base_table %>%
+            group_by(`Application Description`)  %>%
+            summarise(count_users = n())
+        
+        applications_plt_subst <-  head(arrange(applications_plt, desc(count_users)), n = input$top_apps)
+        
+        fig <- plot_ly(applications_plt_subst, labels = ~`Application Description`, values = ~count_users, type = 'pie')
+        fig <- fig %>% layout(title = paste('Top', input$top_apps ,' performing applications'),
+                              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        fig
+        
+    })
+    
+    
+    output$plt_bottom_apps <- renderPlotly({
+        
+        applications_plt <- final_base_table %>%
+            group_by(`Application Description`)  %>%
+            summarise(count_users = n())
+        
+        applications_plt_subst <-  head(arrange(applications_plt, count_users), n = input$bottom_apps)
+        
+        fig <- plot_ly(applications_plt_subst, labels = ~`Application Description`, values = ~count_users, type = 'pie')
+        fig <- fig %>% layout(title = paste('Bottom ', input$bottom_apps,' performing applications'),
+                              xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                              yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+        fig
+        
+    })
+    
+    output$profit_box <- renderValueBox({
+        profits <- final_base_table %>%
+            summarise(profit = sum(profit))
+        valueBox(
+            subtitle ="Total Profits",
+            paste(as.character(format_dollars(profits/1000000)), "M"),
+            color = "purple"
+        )
+    })
+    
+    names(final_base_table)
+    
+    output$buy_box <- renderValueBox({
+        profits <- final_base_table %>%
+            summarise(profit = sum(total_buy))
+        valueBox(
+            subtitle ="Total Buys",
+            paste(as.character(format_dollars(profits/1000000)), "M"),
+            color = "purple"
+        )
+    })
+    
+    output$sell_box <- renderValueBox({
+        profits <- final_base_table %>%
+            summarise(profit = sum(total_sell))
+        valueBox(
+            subtitle ="Total Sold",
+            paste(as.character(format_dollars(profits/1000000)), "M"),
+            color = "purple"
+        )
+    })
+    
+    output$wins_box <- renderValueBox({
+        profits <- final_base_table %>%
+            summarise(profit = sum(total_wins))
+        valueBox(
+            subtitle ="Total Wins",
+            paste(as.character(format_dollars(profits/1000000)), "M"),
+            color = "purple"
+        )
+    })
+    
+    output$stakes_box <- renderValueBox({
+        profits <- final_base_table %>%
+            summarise(profit = sum(total_stakes))
+        valueBox(
+            subtitle ="Total Stakes",
+            paste(as.character(format_dollars(profits/1000000)), "M"),
+            color = "purple"
+        )
+    })
+    
+    output$bets_box <- renderValueBox({
+        profits <- final_base_table %>%
+            summarise(profit = sum(total_bets))
+        valueBox(
+            subtitle ="Total Bets",
+            paste(as.character(format_dollars(profits/1000000)), "M"),
+            color = "purple"
+        )
+    })
+    
     
     }) #Server End
-
-

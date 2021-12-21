@@ -1,5 +1,6 @@
 # Load packages
 if(!require("shiny")) install.packages("shiny"); library("shiny")
+if(!require("ggcorrplot")) install.packages("ggcorrplot"); library("ggcorrplot")
 if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
 if(!require("ggplot2")) install.packages("ggplot2"); library("ggplot2")
 if(!require("dplyr")) install.packages("dplyr"); library("dplyr")
@@ -23,7 +24,7 @@ if (!require("rworldmap")) install.packages("rworldmap"); library("rworldmap");
 if(!require("maptools")) install.packages("maptools"); library("maptools")
 if(!require("sqldf")) install.packages("sqldf"); library("sqldf")
 if(!require("maptools")) install.packages("maptools"); library("maptools")
-
+if(!require("fBasics")) install.packages("fBasics"); library("fBasics")
 if(!require("rworldmap")) install.packages("rworldmap"); library("rworldmap")
 
 
@@ -39,7 +40,7 @@ product_apx <- read_excel("data//appendice.xlsx", sheet = "prod")
 language_apx <- read_excel("data//appendice.xlsx", sheet = "lang")
 app_nm_apx <- read_excel("data//appendice.xlsx", sheet = "app_nm")
 
-data = load('DataGroupAssignment.Rdata')
+data = load('data//DataGroupAssignment.Rdata')
 
 data
 
@@ -83,10 +84,10 @@ Demographics$RTFP <- Demographics$FirstPay - Demographics$RegDate
 #calculate dummy variable for each first play category (sports book, casino play,
 #first games play, first poker play) which indicates whether the indiviual
 #has ever partook in these play categories
-Demographics$SpPlayed <- ifelse(is.na(Demographics$FirstSp),1,0)
-Demographics$CaPlayed <- ifelse(is.na(Demographics$FirstCa),1,0)
-Demographics$GaPlayed <- ifelse(is.na(Demographics$FirstGa),1,0)
-Demographics$PoPlayed <- ifelse(is.na(Demographics$FirstPo),1,0)
+Demographics$SpPlayed <- ifelse(is.na(Demographics$FirstSp),0,1)
+Demographics$CaPlayed <- ifelse(is.na(Demographics$FirstCa),0,1)
+Demographics$GaPlayed <- ifelse(is.na(Demographics$FirstGa),0,1)
+Demographics$PoPlayed <- ifelse(is.na(Demographics$FirstPo),0,1)
 
 sapply(Demographics,function(x) sum(is.na(x)))
 
@@ -503,8 +504,8 @@ df_country_de <- filter(df_country_de, Country_Name == "Germany")
 df_country_de$month <- factor(strftime(df_country_de$FirstPay, '%b'), levels = month.abb)
 df_country_de <- df_country_de %>% 
   group_by(Gender) %>% 
-  summarise(count_users=length(UserID)
-  )
+  summarise(count_users=n())
+  
 
 
 df_country_de$Gender[df_country_de$Gender == 0] <- "Female"
@@ -587,7 +588,6 @@ map_plot
 ###########################
 
 
-
 ###########################
 
 data <- final_base_table
@@ -618,3 +618,210 @@ head(final_base_table)
 #  group_by_(x) %>% 
 #  summarise_(y=sum(y))
 #data_temp
+base_cluster <- final_base_table
+nums <- unlist(lapply(base_cluster, is.numeric))  
+base_cluster <- base_cluster[ , nums]
+
+#############Run Clustering to identify segments#########
+# Compute a correlation matrix
+
+df <- base_cluster
+corr <- round(cor(df), 1)
+
+# Compute a matrix of correlation p-values
+p.mat <- cor_pmat(df)
+
+# Visualize the lower triangle of the correlation matrix
+# Barring the no significant coefficient
+corr.plot <- ggcorrplot(
+  corr, hc.order = TRUE, type = "lower", outline.col = "white",
+  p.mat = p.mat
+)
+corr.plot
+
+##########Remove corelated features#################
+data <- base_cluster
+tmp <- cor(data)
+tmp[upper.tri(tmp)] <- 0
+diag(tmp) <- 0
+
+
+data.new <- 
+  data[, !apply(tmp, 2, function(x) any(abs(x) > 0.99, na.rm = TRUE))]
+head(data.new)
+
+
+#############replot corelarion############
+corr <- round(cor(data.new), 1)
+
+p.mat <- cor_pmat(data.new)
+
+corr.plot <- ggcorrplot(
+  corr, hc.order = TRUE, type = "lower", outline.col = "white",
+  p.mat = p.mat
+)
+corr.plot
+
+
+#########Scale Data###########
+scaled_data <- scale(data.new)
+
+head(scaled_data)
+summary(scaled_data)
+sd(scaled_data)
+scaled_data <- subset(scaled_data, select=-c(UserID))
+head(scaled_data)
+
+#Elbow Method for finding the optimal number of clusters
+set.seed(123)
+# Compute and plot wss for k = 2 to k = 6.
+k.max <- 6
+data <- scaled_data
+scaled_data
+wss <- sapply(1:k.max, 
+              function(k){kmeans(data, k, nstart=50,iter.max = 15 )$tot.withinss})
+wss
+
+plot(1:k.max, wss,
+     type="b", pch = 19, frame = FALSE, 
+     xlab="Number of clusters K",
+     ylab="Total within-clusters sum of squares")
+
+scaled_data <- as.data.frame(scaled_data)
+typeof(scaled_data)
+typeof(kmeans)
+
+#########Run clustering############
+kmeans <- kmeans(scaled_data, 5, nstart=1,iter.max = 20 )
+
+
+#########merge clusters with DF############
+scaled_data_final <- final_base_table %>%
+  mutate(
+    cluster = kmeans$cluster
+    )
+#head(scaled_data_final)
+
+###########Plot CLusters###########
+scaled_data_final <- scaled_data_final %>%
+  group_by(cluster)  %>%
+  summarise(count = n())
+  
+
+plot_ly(
+  x = scaled_data_final$cluster,
+  y = scaled_data_final$count,
+  name = "Clusters",
+  type = "bar"
+)
+
+################Plot Loyalty##################
+loyal <- final_base_table %>%
+  group_by(Loyality)  %>%
+  summarise(count = n())
+
+plot_ly(
+  x = loyal$Loyality,
+  y = loyal$count,
+  name = "Clusters",
+  type = "bar"
+)
+
+#################################
+
+#############Plot Languages#####################
+lang <- final_base_table %>%
+  group_by(`Language Description`)  %>%
+  summarise(count = n())
+
+plot_ly(
+  x = lang$`Language Description`,
+  y = lang$count,
+  name = "Languages",
+  type = "bar"
+)
+
+#############Plot by application#####################
+applications_plt <- final_base_table %>%
+  group_by(`Application Description`)  %>%
+  summarise(count_users = n())
+
+plot_ly(
+  applications_plt,
+  x = ~reorder(`Application Description`, count_users),
+  y = ~count_users,
+  name = "Languages",
+  type = "bar"
+)
+
+##########top 5 apps###########
+
+applications_plt <- final_base_table %>%
+  group_by(`Application Description`)  %>%
+  summarise(count_users = n())
+
+applications_plt_subst <-  head(arrange(applications_plt, desc(count_users)), n = 5)
+
+fig <- plot_ly(applications_plt_subst, labels = ~`Application Description`, values = ~count_users, type = 'pie')
+fig <- fig %>% layout(title = 'Top 5 performing applications',
+                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+fig
+
+##########bottom 5 apps###########
+
+applications_plt <- final_base_table %>%
+  group_by(`Application Description`)  %>%
+  summarise(count_users = n())
+applications_plt
+applications_plt_subst <-  head(arrange(applications_plt, count_users), n = 5)
+
+fig <- plot_ly(applications_plt_subst, labels = ~`Application Description`, values = ~count_users, type = 'pie')
+fig <- fig %>% layout(title = 'Least 5 performing applications',
+                      xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+fig
+
+
+##########################some statastics###############
+stats_data <- final_base_table %>% dplyr::select("txn_cnt", "total_stakes", "total_wins", 
+                                                 "total_bets", "monetary_value"
+                                                 , "profit","transaction_count")
+
+df1 <- round(basicStats(stats_data)[c("Mean", "Stdev", "Median", "Minimum", "Maximum", "nobs"),],2)
+Sum_stats <- c("Mean","Stdev", "Median", "Minimum", "Maximum","nobs")
+Sum_stats
+head(final_base_table)
+#############Profits#####################
+profits <- final_base_table %>%
+  group_by(Country_Name)  %>%
+  summarise(profit = sum(profit))
+
+
+plot_ly(
+  profits,
+  x = ~reorder(Country_Name , profit),
+  y = ~profit,
+  name = "profit",
+  type = "bar"
+)
+
+profits
+
+profits_plot_2 <- final_base_table
+profits_plot_2$month <- factor(strftime(profits_plot_2$FirstPay, '%b'), levels = month.abb)
+
+
+profits_plot_2 <- profits_plot_2 %>%
+  group_by(month)  %>%
+  summarise(profit = sum(profit))
+
+
+plot_ly(
+  profits_plot_2,
+  x = ~reorder(month , profit),
+  y = ~profit,
+  name = "profit",
+  type = "bar"
+)
+
