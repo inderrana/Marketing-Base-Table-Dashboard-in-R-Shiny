@@ -152,7 +152,7 @@ scatter_plot_monetary_value_1
 
 *Weigthed RFM (Recency Frequency and Monetary Value) Score:*
 
-The Weighted RFM metric encapsulates information from the three previous metrics which are weighted and represented in one coefficient, where 1.6 represents the first percentile of gamblers for the metric, i.e. those with the highest score or summation of the metric(`recency_score`,`frequency_score`, and `monetary_value_score`). The three metrics are then transformed into a numeric value with the same ranking system as weighted RFM.`weighted_rfm` aggregates these three intermediary metrics to give a comprehensive measure of each gambler RFM value.  
+The Weighted RFM metric encapsulates information from the three previous metrics which are weighted and represented in one coefficient, where 1.6 represents the first percentile of gamblers for the metric, i.e. those with the highest score or summation of the metrics (`recency_score`,`frequency_score`, and `monetary_value_score`), which is itself represented in its full numerical value as `rfm_value`. The three metrics are then transformed into numeric values respectively, with the same ranking system as weighted RFM.`weighted_rfm` is an aggregate weighted value of these three intermediary metrics to give a comprehensive measure of each gambler's RFM value.  
 
 
 
@@ -164,7 +164,13 @@ histogram_monetary_RFM_score
 
 *Loyality:*  
 
-The loyality metric categorizes each gambler in the dataset in one of the following bins: Regular Customers, Hesitant Customers, Needs Attention, Potential Loyalists, and Loyalists. The tier in which a gambler falls within is dictated by their weighted RFM scored classified as follows: Weighted RFM score greater than 1.6: Loyalists, weighted RFM between 1.6 and 1.3: Potential Loyalists, weighted RFM between 1.3 and 0.7: Regular Customers, weighted RFM between 0.7 and 0.4: Hesistant customers, and finally weighted RFM below 0.4: Needs Attention.   
+The loyality metric categorizes each gambler in the dataset in one of the following bins: Regular Customers, Hesitant Customers, Needs Attention, Potential Loyalists, and Loyalists. The tier in which a gambler falls within is dictated by their weighted RFM scored classified as follows:  
+
+* Weighted RFM score greater than 1.6: Loyalists  
+* Weighted RFM between 1.6 and 1.3: Potential Loyalists  
+* Weighted RFM between 1.3 and 0.7: Regular Customers   
+* Weighted RFM between 0.7 and 0.4: Hesistant customers   
+* Finally, a weighted RFM below 0.4: Needs Attention   
 
 
 ```{r,echo=FALSE,cache=FALSE, warning=FALSE, comment=FALSE}
