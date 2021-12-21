@@ -103,6 +103,17 @@ shinyServer(function(input, output) {
         
     })
     
+    output$distribution <- renderPlot({
+    hist(final_base_table[input$var])
+    })
+    
+    
+    output$playplots <- renderPlot({
+        x <- input$var_x
+        y <- input$var_y
+        
+        plot(final_base_table$x, final_base_table$y)
+    })
     
     
     }) #Server End

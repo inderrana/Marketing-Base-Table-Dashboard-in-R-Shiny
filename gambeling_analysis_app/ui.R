@@ -55,13 +55,12 @@ sidebar <- dashboardSidebar(
     menuItem("Overview", tabName = "overview", icon = icon("r-project")),
     menuItem("Summary", icon = icon("map"), tabName = "summary"),
     menuItem("Demographics", icon = icon("map"), tabName = "demographics"),
-    menuItem("Segmentation", tabName = "segs", icon = icon("users")),
     menuItem("Product", tabName = "product", icon = icon("gamepad")),
     menuItem("Gambleing", icon = icon("dice"), tabName = "gambleing"),
     menuItem("Top Customers", icon = icon("smile"), tabName = "topcustomers"),
     menuItem("Conclusion", icon = icon("smile"), tabName = "conclusion"),
     menuItem("Basetable", tabName = "basetable", icon = icon("table")),
-    menuItem("Datamart", tabName = "datamart", icon = icon("table"))
+    menuItem("Play Area", tabName = "distribution", icon = icon("users"))
       )
   )
 
@@ -152,13 +151,41 @@ body <- dashboardBody(
              h1("Gambling - Winners Analysis"),
              plotOutput("gambleing", width = "100%")
              
-    )
+    ),
+
+#############Tab: Product  #################
+tabItem (tabName = "distribution",  fluidRow(
+  # Source Page Header
+  titlePanel("Play area for custom ploting"),
+  tabsetPanel(
+    tabPanel("Hist",  br(),
+             mainPanel(
+               column(width=11,
+                      fluidRow(height = 200,
+                               selectInput("var", "Select a Variable to plot",
+                                           names(final_base_table[ , unlist(lapply(final_base_table, is.numeric))]),
+                                           selected ="txn_cnt"),
+                               plotOutput("distribution", width = "100%")
+                               
+                      )))),
+    tabPanel("More Plots",  br(),
+             mainPanel(
+               column(width=11,
+                      fluidRow(height = 200,
+                               box(selectInput("var_x", "Select a Variable to plot (X)",
+                                           names(final_base_table[ , unlist(lapply(final_base_table, is.numeric))]),
+                                           selected ="txn_cnt")),
+                               box(selectInput("var_y", "Select a Variable to plot (Y)",
+                                           names(final_base_table[ , unlist(lapply(final_base_table, is.numeric))]),
+                                           selected ="amount")),
+                               plotOutput("playplots", width = "100%")
+                               
+                      ))))
+  )))
 
 
     
-    
-    
-  ))# end of tabsitem and body      
+  ))# end of tab item and body      
 shinyUI(fluidPage(
                   dashboardPage(header, sidebar, body)
 ))      

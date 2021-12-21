@@ -26,7 +26,7 @@ if(!require("sqldf")) install.packages("sqldf"); library("sqldf")
 options(scipen = 20)
 
 getwd()
-
+setwd("C:\\Users\\irana\\OneDrive - IESEG\\Documents\\GitHub\\marketing_datamart\\gambeling_analysis_app")
 #setwd("/Users/inder/Dropbox/My Mac (Inders-MacBook-Pro.local)/Documents/GitHub/marketing_datamart/gambeling_analysis")
 
 
@@ -317,7 +317,9 @@ names(final_base_table)[names(final_base_table) == 'Country Name'] <- 'Country_N
 
 glimpse(final_base_table)
 
-save(final_base_table, file = "base_table.RData")
+#final_base_table %>% replace(is.na(.), 0)
+
+save(final_base_table, file = "data//base_table.RData")
 
 
 ###########################
@@ -368,7 +370,7 @@ bar_plots_products <- ggplot(df_product_counts,aes(x=products,y=counts, fill=pro
 
 bar_plots_products
 ###########################
-head(base_table)
+#head(base_table)
 
 ###########################
 df_donut <- sqldf("select [Country_Name] as country, count(UserID) as count from final_base_table group by 1 order by 2 desc limit 11")
@@ -428,7 +430,7 @@ rgn_plt$Category <- ifelse(rgn_plt$n <= 100, 1, ifelse(rgn_plt$n > 1000 & rgn_pl
 
 rgn_plt <- rename(rgn_plt, Country = region)
 
-ctry_map_df <- read_excel("appendice.xlsx", sheet = "country_nm")
+ctry_map_df <- read_excel("data//appendice.xlsx", sheet = "country_nm")
 
 # Get the world map
 worldMap <- getMap()
@@ -454,9 +456,7 @@ europeCoords <- lapply(indEU, function(i){
 europeCoords <- do.call("rbind", europeCoords)
 
 world_map <- map_data("world")
-
 rgn_plt_nm <- left_join(rgn_plt, ctry_map_df, by  = "Country")
-
 rgn_plt_2 <- inner_join(rgn_plt_nm, europeCoords, by = c("Country Name"="region"))
 
 # Plot map
@@ -478,18 +478,15 @@ map_plot
 
 head(base_table$Country)  
 
-data <- subset(base_table, Gender ==1)
-
+#data <- subset(base_table, Gender ==1)
 data(wrld_simpl)
 myCountries = wrld_simpl@data$NAME %in% data$Country
 plot(wrld_simpl, col = c(gray(.80), "red")[myCountries+1])
 
 
-hist(base_table$txn_cnt)
+plot(final_base_table$txn_cnt, final_base_table$amount)
+
+
 head(base_table)
-
-
-
-
 
 
