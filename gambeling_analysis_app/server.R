@@ -55,7 +55,7 @@ shinyServer(function(input, output) {
     
     ################demographics###########
     output$demographics <- renderPlotly({
-        df_donut <- read.csv("df_donut.csv")
+        df_donut <- read.csv("data/df_donut.csv")
         
         plot_ly(labels = df_donut$country, values = df_donut$count)  %>% 
             plotly::add_pie(hole = 0.5) %>% 
@@ -68,7 +68,7 @@ shinyServer(function(input, output) {
    
     
     output$demographics2 <- renderPlotly({
-    df_country <- read.csv("df_country.csv")
+    df_country <- read.csv("data/df_country.csv")
     fig_cntry <- plot_ly(
         df_country,
         x = ~reorder(Country_Name, Male),

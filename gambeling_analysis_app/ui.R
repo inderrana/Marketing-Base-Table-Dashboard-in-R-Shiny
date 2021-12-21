@@ -70,7 +70,7 @@ sidebar <- dashboardSidebar(
 body <- dashboardBody(
   ### changing theme
   shinyDashboardThemes(
-    theme = "grey_dark"
+    theme = "purple_gradient"
   ),
   
   

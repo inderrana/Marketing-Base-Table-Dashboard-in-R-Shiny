@@ -20,7 +20,7 @@ The purpose of this manual is to provide our marketing analysis team with a high
 *Total Bets Stats:*
 
 ```{r, echo=FALSE,results=TRUE}
-print(summary(base_table$total_bets))
+load("~/Desktop/marketing_datamart/gambeling_analysis/base_table.Rdata")
 ```
 
 
@@ -162,6 +162,25 @@ histogram_monetary_RFM_score <- ggplot(base_table, aes(x=weighted_rfm)) +
 histogram_monetary_RFM_score
 ```
 
+The following plot displays the relationship of RFM value (unweighted) to profit (for Bwin).  
+
+```{r,echo=FALSE,cache=FALSE, warning=FALSE, comment=FALSE, warning=FALSE,message=FALSE}
+profit_to_rfm <- ggplot(base_table,aes(x=rfm_value,y=profit,size=amount)) + 
+  geom_point() + 
+  theme_bw() + 
+  ggtitle('Profit against RFM value' ) +
+  labs(x='RFM value', y='Profit (Euros)',size='Total Winnings (Euros)') + theme(legend.position='top') +
+  geom_smooth(method = 'lm') + theme(plot.title = element_text(hjust = 0.5))
+profit_to_rfm
+```
+
+It is visible that there's actually a somewhat weak correlation between profit for the brand and RFM value of the gambler. Additionally, the gamblers with a mid-range RFM value account are the most profitable gamblers for Bwin. The pearson correlation coefficient can be found below.
+
+```{r, echo=FALSE, include=TRUE,results=TRUE,comment=FALSE, warning=FALSE,message=FALSE}
+cor(base_table$profit,base_table$rfm_value)
+```
+
+
 *Loyality:*  
 
 The loyality metric categorizes each gambler in the dataset in one of the following bins: Regular Customers, Hesitant Customers, Needs Attention, Potential Loyalists, and Loyalists. The tier in which a gambler falls within is dictated by their weighted RFM scored classified as follows:  
@@ -196,3 +215,13 @@ for (i in 1:length(plot_list)) {
     print(plot_list[i])
   }
 ```
+## Takeaways:
+
+The most relevant insights from a business perspective that our analysis brought to the forefront are as follows:
+
+* We have a small population of loyalists with a high betting frequency, who seldomly win big making them our most profitable gamblers.  
+
+* We have large population of passive or casual betters with low-frequency betting, whom are winning at a larger rate substantially than our loyalists. 
+
+* The inbetween
+
