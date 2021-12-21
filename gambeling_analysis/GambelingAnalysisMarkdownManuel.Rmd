@@ -239,3 +239,5 @@ for (i in 1:length(plot_list)) {
 
 * Finally, we know that the gamblers are segmented into five different segments (Need attention, Hesitant Customers, Regular Customers, Potential Loyalists, and Loyalists). These clusters have been validated using a K-means clustering algorithm in addition to our RFM scoring system. Furthermore, we know that the quantity of gamblers in each of these bins which will be useful when targeting them in marketing campaigns.
 
+* To explore the dataset and view other relevant plots via a Shiny R app, [click here](https://inder-rana.shinyapps.io/gambeling_analysis_app/)  
+
