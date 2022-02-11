@@ -18,6 +18,7 @@ app_nm_apx <- read_excel("appendice.xlsx", sheet = "app_nm")
 
 load("base_table.Rdata")
 
+
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 
@@ -312,8 +313,8 @@ shinyServer(function(input, output) {
     
     output$distribution <- renderPlot({
         load("base_table.Rdata")
-        xvar <- input$var
-        hist(final_base_table[xvar])
+        #xvar <- input$var
+        hist(final_base_table[,"txn_cnt"])
     })
     
     
